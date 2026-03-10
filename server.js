@@ -40,7 +40,8 @@ app.post('/api/genereer', async (req, res) => {
       messages
     });
 
-    const resultaat = response.content.map(i => i.text || '').join('');
+    const raw = response.content.map(i => i.text || '').join('');
+const resultaat = raw.replace(/\*\*/g, '').replace(/\*/g, '');
     res.json({ resultaat });
 
   } catch (err) {
