@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PandAI — Verkoopteksten Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --o: #F26A1B; --o2: #FF8C42;
+    --bg: #0E0E0E; --bg2: #161616; --bg3: #1E1E1E; --bg4: #262626;
+    --wit: #F5F5F0; --grijs: #666; --grijs2: #999;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--wit); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 48px; border-bottom: 1px solid #1a1a1a; position: sticky; top: 0; background: rgba(14,14,14,0.96); backdrop-filter: blur(16px); z-index: 100; }
+  .logo { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+  .logo span { color: var(--o); }
+  .nav-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--grijs); background: var(--bg3); border: 1px solid #2a2a2a; padding: 6px 12px; border-radius: 100px; }
+
+  .app { display: grid; grid-template-columns: 440px 1fr; min-height: calc(100vh - 65px); }
+
+  .paneel-links { border-right: 1px solid #1a1a1a; padding: 32px; overflow-y: auto; background: var(--bg2); }
+  .paneel-titel { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .paneel-sub { font-size: 13px; color: var(--grijs2); margin-bottom: 28px; line-height: 1.5; }
+
+  .upload-zone { border: 2px dashed #2a2a2a; border-radius: 14px; padding: 32px 20px; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; background: var(--bg3); position: relative; }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--o); background: rgba(242,106,27,0.05); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 36px; margin-bottom: 12px; }
+  .upload-zone h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .upload-zone p { font-size: 12px; color: var(--grijs2); }
+  .formaten { display: flex; gap: 6px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .formaat-tag { font-size: 10px; padding: 3px 8px; background: var(--bg4); border: 1px solid #333; border-radius: 4px; color: var(--grijs2); letter-spacing: 1px; text-transform: uppercase; }
+
+  .bestand-preview { display: none; background: rgba(242,106,27,0.08); border: 1px solid rgba(242,106,27,0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; align-items: center; gap: 12px; }
+  .bestand-icon { font-size: 24px; flex-shrink: 0; }
+  .bestand-info { flex: 1; min-width: 0; }
+  .bestand-naam { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bestand-type { font-size: 11px; color: var(--o2); margin-top: 2px; }
+  .bestand-verwijder { background: none; border: none; color: var(--grijs); cursor: pointer; font-size: 18px; flex-shrink: 0; }
+  .bestand-verwijder:hover { color: #ff4444; }
+
+  .of-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+  .of-divider::before, .of-divider::after { content: ''; flex: 1; height: 1px; background: #222; }
+  .of-divider span { font-size: 12px; color: var(--grijs); text-transform: uppercase; letter-spacing: 1px; }
+
+  .handmatig-toggle { width: 100%; background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--grijs2); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+  .handmatig-toggle:hover { border-color: #444; color: var(--wit); }
+  .handmatig-toggle .pijl { transition: transform 0.3s; }
+  .handmatig-toggle.open .pijl { transform: rotate(180deg); }
+  .handmatig-formulier { display: none; padding-top: 20px; }
+  .handmatig-formulier.open { display: block; }
+
+  .form-sectie { margin-bottom: 20px; }
+  .form-sectie-titel { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--o); font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .form-sectie-titel::after { content: ''; flex: 1; height: 1px; background: #222; }
+
+  .veld { margin-bottom: 12px; }
+  .veld label { display: block; font-size: 12px; color: var(--grijs2); margin-bottom: 6px; font-weight: 500; }
+  .veld input, .veld select, .veld textarea { width: 100%; background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--wit); outline: none; transition: border-color 0.2s; resize: none; }
+  .veld input:focus, .veld select:focus, .veld textarea:focus { border-color: var(--o); }
+  .veld select option { background: var(--bg3); }
+  .veld-rij { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .checkbox-item { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 12px; cursor: pointer; transition: all 0.2s; font-size: 12px; color: var(--grijs2); user-select: none; }
+  .checkbox-item:hover { border-color: #444; color: var(--wit); }
+  .checkbox-item.actief { border-color: var(--o); color: var(--o); background: rgba(242,106,27,0.08); }
+  .checkbox-dot { width: 14px; height: 14px; border: 1.5px solid currentColor; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+  .checkbox-item.actief .checkbox-dot::after { content: '✓'; }
+
+  .toon-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; margin-bottom: 4px; }
+  .toon-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--o); font-weight: 600; margin-top: 20px; margin-bottom: 12px; }
+  .toon-btn { background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 100px; padding: 7px 14px; font-size: 12px; color: var(--grijs2); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .toon-btn:hover { border-color: #444; color: var(--wit); }
+  .toon-btn.actief { border-color: var(--o); color: var(--o); background: rgba(242,106,27,0.08); }
+
+  .genereer-btn { width: 100%; background: linear-gradient(135deg, var(--o), var(--o2)); color: white; border: none; border-radius: 10px; padding: 16px; font-size: 15px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.2s; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .genereer-btn:hover { transform: scale(1.02); opacity: 0.95; }
+  .genereer-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .paneel-rechts { padding: 32px 40px; display: flex; flex-direction: column; }
+  .resultaat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .resultaat-header h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+  .resultaat-acties { display: flex; gap: 8px; }
+  .actie-btn { background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 500; color: var(--grijs2); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; }
+  .actie-btn:hover { border-color: var(--o); color: var(--o); }
+
+  .leeg-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px; }
+  .leeg-icon { font-size: 56px; margin-bottom: 20px; }
+  .leeg-state h3 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #444; }
+  .leeg-state p { font-size: 14px; color: #333; max-width: 320px; line-height: 1.6; }
+
+  .loading-state { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+  .loading-bar-wrap { width: 280px; background: var(--bg3); border-radius: 100px; height: 4px; overflow: hidden; }
+  .loading-bar { height: 100%; background: linear-gradient(90deg, var(--o), var(--o2)); border-radius: 100px; animation: laden 2s ease-in-out infinite; }
+  @keyframes laden { 0% { transform: translateX(-100%); width: 40%; } 50% { width: 70%; } 100% { transform: translateX(350%); width: 30%; } }
+  .loading-tekst strong { color: var(--wit); display: block; font-size: 16px; margin-bottom: 8px; font-family: 'Syne', sans-serif; text-align: center; }
+  .loading-stappen { display: flex; flex-direction: column; gap: 8px; }
+  .loading-stap { font-size: 12px; color: #444; display: flex; align-items: center; gap: 8px; transition: color 0.4s; }
+  .loading-stap.actief { color: var(--o2); }
+  .loading-stap.klaar { color: #4CAF50; }
+  .stap-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  .score-rij { display: none; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .score-badge { display: flex; align-items: center; gap: 6px; background: rgba(242,106,27,0.1); border: 1px solid rgba(242,106,27,0.2); border-radius: 100px; padding: 6px 12px; font-size: 12px; color: var(--o2); font-weight: 500; }
+
+  .tekst-output { display: none; flex-direction: column; gap: 20px; flex: 1; }
+  .tekst-blok { background: var(--bg2); border: 1px solid #1f1f1f; border-radius: 12px; overflow: hidden; }
+  .tekst-blok-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #1f1f1f; background: var(--bg3); }
+  .tekst-blok-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--o); font-weight: 600; }
+  .kopieer-btn { font-size: 11px; color: var(--grijs2); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
+  .kopieer-btn:hover { color: var(--o); background: rgba(242,106,27,0.1); }
+  .tekst-inhoud { padding: 20px 18px; font-size: 14px; line-height: 1.8; color: #ccc; white-space: pre-wrap; }
+
+  .fout-melding { display: none; background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); border-radius: 10px; padding: 16px; color: #ff8888; font-size: 13px; margin-top: 12px; line-height: 1.6; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .paneel-links { border-right: none; border-bottom: 1px solid #1a1a1a; }
+    nav, .paneel-links, .paneel-rechts { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Pand<span>AI</span></div>
+  <div class="nav-tag">Verkoopteksten Generator</div>
+</nav>
+
+<div class="app">
+  <div class="paneel-links">
+    <div class="paneel-titel">Inventarisatie uploaden</div>
+    <div class="paneel-sub">Upload het ingevulde formulier van de bezichtiging — PandAI leest het automatisch uit en schrijft de verkooptekst.</div>
+
+    <div class="upload-zone" id="upload-zone"
+      ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropBestand(event)">
+      <input type="file" id="bestand-input" accept=".pdf,.docx,.doc,.xlsx,.xls,.jpg,.jpeg,.png,.webp" onchange="bestandGekozen(event)" />
+      <div class="upload-icon">📂</div>
+      <h3>Sleep je inventarisatie hierheen</h3>
+      <p>of klik om een bestand te kiezen</p>
+      <div class="formaten">
+        <span class="formaat-tag">PDF</span>
+        <span class="formaat-tag">Word</span>
+        <span class="formaat-tag">Excel</span>
+        <span class="formaat-tag">Foto</span>
+      </div>
+    </div>
+
+    <div class="bestand-preview" id="bestand-preview">
+      <div class="bestand-icon" id="bestand-icon">📄</div>
+      <div class="bestand-info">
+        <div class="bestand-naam" id="bestand-naam"></div>
+        <div class="bestand-type" id="bestand-type"></div>
+      </div>
+      <button class="bestand-verwijder" onclick="verwijderBestand()">✕</button>
+    </div>
+
+    <div class="of-divider"><span>of</span></div>
+
+    <button class="handmatig-toggle" id="handmatig-toggle" onclick="toggleHandmatig()">
+      <span>Handmatig invullen</span>
+      <span class="pijl">▾</span>
+    </button>
+
+    <div class="handmatig-formulier" id="handmatig-formulier">
+      <div class="form-sectie" style="margin-top:16px">
+        <div class="form-sectie-titel">Basisinformatie</div>
+        <div class="veld">
+          <label>Type woning</label>
+          <select id="type">
+            <option>Tussenwoning</option><option>Hoekwoning</option>
+            <option>Vrijstaande woning</option><option>Twee-onder-een-kap</option>
+            <option>Appartement</option><option>Penthouse</option>
+            <option>Villa</option><option>Bungalow</option>
+          </select>
+        </div>
+        <div class="veld-rij">
+          <div class="veld"><label>Woonoppervlak (m²)</label><input type="number" id="oppervlak" placeholder="125"></div>
+          <div class="veld"><label>Perceel (m²)</label><input type="number" id="perceel" placeholder="280"></div>
+        </div>
+        <div class="veld-rij">
+          <div class="veld"><label>Kamers</label><input type="number" id="kamers" placeholder="5"></div>
+          <div class="veld"><label>Bouwjaar</label><input type="number" id="bouwjaar" placeholder="1998"></div>
+        </div>
+        <div class="veld"><label>Stad / buurt</label><input type="text" id="locatie" placeholder="Amsterdam, De Pijp"></div>
+        <div class="veld-rij">
+          <div class="veld">
+            <label>Energielabel</label>
+            <select id="energielabel">
+              <option value="">Onbekend</option>
+              <option>A+++</option><option>A++</option><option>A+</option><option>A</option>
+              <option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option>
+            </select>
+          </div>
+          <div class="veld"><label>Vraagprijs</label><input type="text" id="prijs" placeholder="€ 425.000"></div>
+        </div>
+      </div>
+
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Kenmerken</div>
+        <div class="checkbox-grid" id="kenmerken">
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Moderne keuken</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Luxe badkamer</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zonnige tuin</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Garage / parkeren</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakkapel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zonnepanelen</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vloerverwarming</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Airconditioning</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Open woonkamer</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Rustige straat</span></label>
+        </div>
+      </div>
+
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Extra</div>
+        <div class="veld"><textarea id="extra" rows="3" placeholder="Bijv: recent gerenoveerd, prachtig uitzicht..."></textarea></div>
+      </div>
+    </div>
+
+    <div class="toon-label">Schrijfstijl</div>
+    <div class="toon-grid">
+      <button class="toon-btn actief" onclick="selectToon(this, 'Professioneel en betrouwbaar')">Professioneel</button>
+      <button class="toon-btn" onclick="selectToon(this, 'Warm en uitnodigend')">Warm & uitnodigend</button>
+      <button class="toon-btn" onclick="selectToon(this, 'Luxe en exclusief')">Luxe & exclusief</button>
+      <button class="toon-btn" onclick="selectToon(this, 'Energiek en modern')">Energiek & modern</button>
+      <button class="toon-btn" onclick="selectToon(this, 'Zakelijk en to-the-point')">Zakelijk</button>
+    </div>
+
+    <button class="genereer-btn" id="genereer-btn" onclick="genereerTekst()">
+      <span class="spinner" id="spinner"></span>
+      <span id="btn-tekst">✨ Genereer verkoopteksten</span>
+    </button>
+
+    <div class="fout-melding" id="fout-melding"></div>
+  </div>
+
+  <div class="paneel-rechts">
+    <div class="resultaat-header">
+      <h2>Gegenereerde teksten</h2>
+      <div class="resultaat-acties">
+        <button class="actie-btn" onclick="allesKopieren()" id="kopieer-alles" style="display:none">📋 Alles kopiëren</button>
+        <button class="actie-btn" onclick="genereerTekst()" id="opnieuw-btn" style="display:none">↺ Opnieuw</button>
+      </div>
+    </div>
+
+    <div class="leeg-state" id="leeg-state">
+      <div class="leeg-icon">🏡</div>
+      <h3>Nog geen tekst gegenereerd</h3>
+      <p>Upload een inventarisatieformulier of vul de gegevens handmatig in.</p>
+    </div>
+
+    <div class="loading-state" id="loading-state">
+      <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+      <div class="loading-tekst">
+        <strong id="loading-titel">Bezig met verwerken...</strong>
+        <div class="loading-stappen">
+          <div class="loading-stap" id="stap-1"><span class="stap-dot"></span>Document uitlezen</div>
+          <div class="loading-stap" id="stap-2"><span class="stap-dot"></span>Pandgegevens extraheren</div>
+          <div class="loading-stap" id="stap-3"><span class="stap-dot"></span>Verkoopteksten schrijven</div>
+          <div class="loading-stap" id="stap-4"><span class="stap-dot"></span>Teksten optimaliseren</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-rij" id="score-rij">
+      <div class="score-badge">✓ Funda-klaar</div>
+      <div class="score-badge">✓ SEO-vriendelijk</div>
+      <div class="score-badge">✓ 4 varianten</div>
+    </div>
+
+    <div class="tekst-output" id="tekst-output">
+      <div class="tekst-blok">
+        <div class="tekst-blok-header"><span class="tekst-blok-label">🏠 Pakkende titel</span><button class="kopieer-btn" onclick="kopieer('titel-inhoud', this)">📋 Kopiëren</button></div>
+        <div class="tekst-inhoud" id="titel-inhoud"></div>
+      </div>
+      <div class="tekst-blok">
+        <div class="tekst-blok-header"><span class="tekst-blok-label">📝 Korte omschrijving (Funda intro)</span><button class="kopieer-btn" onclick="kopieer('kort-inhoud', this)">📋 Kopiëren</button></div>
+        <div class="tekst-inhoud" id="kort-inhoud"></div>
+      </div>
+      <div class="tekst-blok">
+        <div class="tekst-blok-header"><span class="tekst-blok-label">📄 Volledige verkooptekst</span><button class="kopieer-btn" onclick="kopieer('volledig-inhoud', this)">📋 Kopiëren</button></div>
+        <div class="tekst-inhoud" id="volledig-inhoud"></div>
+      </div>
+      <div class="tekst-blok">
+        <div class="tekst-blok-header"><span class="tekst-blok-label">📱 Social media caption</span><button class="kopieer-btn" onclick="kopieer('social-inhoud', this)">📋 Kopiëren</button></div>
+        <div class="tekst-inhoud" id="social-inhoud"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let geselecteerdeToon = 'Professioneel en betrouwbaar';
+  let huidigBestand = null;
+  let uitgelezenTekst = '';
+  let bestandBase64 = '';
+  let bestandMediaType = '';
+
+  function dragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+  function dragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
+  function dropBestand(e) { e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag-over'); if (e.dataTransfer.files[0]) verwerkBestand(e.dataTransfer.files[0]); }
+  function bestandGekozen(e) { if (e.target.files[0]) verwerkBestand(e.target.files[0]); }
+
+  async function verwerkBestand(file) {
+    huidigBestand = file;
+    uitgelezenTekst = ''; bestandBase64 = ''; bestandMediaType = '';
+    const ext = file.name.split('.').pop().toLowerCase();
+    const iconen = { pdf:'📕', docx:'📘', doc:'📘', xlsx:'📗', xls:'📗', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', webp:'🖼️' };
+    const typen = { pdf:'PDF document', docx:'Word document', doc:'Word document', xlsx:'Excel spreadsheet', xls:'Excel spreadsheet', jpg:'Foto', jpeg:'Foto', png:'Foto', webp:'Foto' };
+    const mediatypen = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp', pdf:'application/pdf' };
+
+    document.getElementById('bestand-icon').textContent = iconen[ext] || '📄';
+    document.getElementById('bestand-naam').textContent = file.name;
+    document.getElementById('bestand-type').textContent = (typen[ext] || 'Document') + ' — klaar om te verwerken';
+    document.getElementById('bestand-preview').style.display = 'flex';
+
+    if (['jpg','jpeg','png','webp','pdf'].includes(ext)) {
+      bestandBase64 = await naarBase64(file);
+      bestandMediaType = mediatypen[ext];
+    } else if (['docx','doc'].includes(ext)) {
+      const ab = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer: ab });
+      uitgelezenTekst = result.value;
+    } else if (['xlsx','xls'].includes(ext)) {
+      const ab = await file.arrayBuffer();
+      const wb = XLSX.read(ab, { type: 'array' });
+      wb.SheetNames.forEach(n => { uitgelezenTekst += XLSX.utils.sheet_to_csv(wb.Sheets[n]) + '\n'; });
+    }
+  }
+
+  function naarBase64(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  function verwijderBestand() {
+    huidigBestand = null; uitgelezenTekst = ''; bestandBase64 = ''; bestandMediaType = '';
+    document.getElementById('bestand-preview').style.display = 'none';
+    document.getElementById('bestand-input').value = '';
+  }
+
+  function toggleHandmatig() {
+    document.getElementById('handmatig-formulier').classList.toggle('open');
+    document.getElementById('handmatig-toggle').classList.toggle('open');
+  }
+
+  function toggleCheck(el) { el.classList.toggle('actief'); }
+
+  function selectToon(el, toon) {
+    document.querySelectorAll('.toon-btn').forEach(b => b.classList.remove('actief'));
+    el.classList.add('actief'); geselecteerdeToon = toon;
+  }
+
+  function activeerStap(n) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('stap-' + i);
+      el.className = 'loading-stap' + (i < n ? ' klaar' : i === n ? ' actief' : '');
+    }
+  }
+
+  async function genereerTekst() {
+    const btn = document.getElementById('genereer-btn');
+    btn.disabled = true;
+    document.getElementById('spinner').style.display = 'block';
+    document.getElementById('btn-tekst').textContent = 'Bezig...';
+    document.getElementById('fout-melding').style.display = 'none';
+    document.getElementById('leeg-state').style.display = 'none';
+    document.getElementById('loading-state').style.display = 'flex';
+    document.getElementById('tekst-output').style.display = 'none';
+    document.getElementById('score-rij').style.display = 'none';
+    document.getElementById('kopieer-alles').style.display = 'none';
+    document.getElementById('opnieuw-btn').style.display = 'none';
+
+    activeerStap(1);
+    setTimeout(() => activeerStap(2), 800);
+    setTimeout(() => activeerStap(3), 2000);
+
+    try {
+      const body = { toon: geselecteerdeToon };
+
+      if (bestandBase64) {
+        body.fileBase64 = bestandBase64;
+        body.fileMediaType = bestandMediaType;
+      } else if (uitgelezenTekst) {
+        body.tekst = uitgelezenTekst;
+      } else {
+        body.data = {
+          'Type woning': document.getElementById('type').value,
+          'Woonoppervlak': document.getElementById('oppervlak').value + ' m²',
+          'Perceeloppervlak': document.getElementById('perceel').value + ' m²',
+          'Kamers': document.getElementById('kamers').value,
+          'Bouwjaar': document.getElementById('bouwjaar').value,
+          'Locatie': document.getElementById('locatie').value,
+          'Energielabel': document.getElementById('energielabel').value,
+          'Vraagprijs': document.getElementById('prijs').value,
+          'Kenmerken': Array.from(document.querySelectorAll('#kenmerken .checkbox-item.actief')).map(el => el.querySelector('span').textContent).join(', '),
+          'Extra': document.getElementById('extra').value
+        };
+      }
+
+      const resp = await fetch('/api/genereer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const json = await resp.json();
+      if (!resp.ok) throw new Error(json.error || 'API fout');
+
+      activeerStap(4);
+      const tekst = json.resultaat;
+
+      document.getElementById('titel-inhoud').textContent = parseSectie(tekst, 'TITEL');
+      document.getElementById('kort-inhoud').textContent = parseSectie(tekst, 'KORT');
+      document.getElementById('volledig-inhoud').textContent = parseSectie(tekst, 'VOLLEDIG');
+      document.getElementById('social-inhoud').textContent = parseSectie(tekst, 'SOCIAL');
+
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('tekst-output').style.display = 'flex';
+      document.getElementById('score-rij').style.display = 'flex';
+      document.getElementById('kopieer-alles').style.display = 'flex';
+      document.getElementById('opnieuw-btn').style.display = 'flex';
+
+    } catch (err) {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('leeg-state').style.display = 'flex';
+      const fout = document.getElementById('fout-melding');
+      fout.style.display = 'block';
+      fout.textContent = '⚠️ ' + (err.message || 'Er ging iets mis. Controleer je verbinding en probeer opnieuw.');
+    }
+
+    btn.disabled = false;
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('btn-tekst').textContent = '✨ Genereer verkoopteksten';
+  }
+
+  function parseSectie(tekst, label) {
+    const match = tekst.match(new RegExp(label + ':\\s*([\\s\\S]*?)(?=\\n[A-Z]+:|$)', 'i'));
+    return match ? match[1].trim() : '';
+  }
+
+  function kopieer(id, btn) {
+    navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+      const orig = btn.textContent; btn.textContent = '✓ Gekopieerd!'; btn.style.color = '#4CAF50';
+      setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+    });
+  }
+
+  function allesKopieren() {
+    const alles = ['titel','kort','volledig','social'].map(id => {
+      const labels = { titel: 'TITEL', kort: 'KORTE OMSCHRIJVING', volledig: 'VOLLEDIGE VERKOOPTEKST', social: 'SOCIAL MEDIA' };
+      return labels[id] + ':\n' + document.getElementById(id + '-inhoud').textContent;
+    }).join('\n\n');
+    navigator.clipboard.writeText(alles);
+  }
+</script>
+</body>
+</html>
