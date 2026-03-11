@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PandAI — Verkoopteksten Generator</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -64,7 +65,13 @@
   .veld input:focus, .veld select:focus, .veld textarea:focus { border-color: var(--o); }
   .veld select option { background: var(--bg3); }
   .veld-rij { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .veld-rij-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ADRES AUTOCOMPLETE */
+  .adres-wrapper { position: relative; }
+  .adres-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a; border: 1px solid #333; border-top: none; border-radius: 0 0 8px 8px; z-index: 50; max-height: 200px; overflow-y: auto; display: none; }
+  .adres-optie { padding: 10px 14px; font-size: 12px; cursor: pointer; color: var(--wit); border-bottom: 1px solid #222; transition: background 0.15s; }
+  .adres-optie:hover { background: rgba(242,106,27,0.15); color: var(--o); }
+  .adres-optie:last-child { border-bottom: none; }
 
   .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .checkbox-item { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: all 0.2s; font-size: 12px; color: var(--grijs2); user-select: none; }
@@ -121,6 +128,7 @@
 
   .fout-melding { display: none; background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); border-radius: 10px; padding: 16px; color: #ff8888; font-size: 13px; margin-top: 12px; line-height: 1.6; }
 
+  /* SCHRIJFSTIJL */
   .stijl-sectie { background: linear-gradient(135deg, rgba(242,106,27,0.06), rgba(255,140,66,0.03)); border: 1px solid rgba(242,106,27,0.2); border-radius: 14px; padding: 20px; margin-bottom: 24px; }
   .stijl-sectie-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .stijl-titel { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--wit); display: flex; align-items: center; gap: 8px; }
@@ -137,13 +145,15 @@
   .stijl-voeg-toe:hover { border-color: var(--o); color: var(--o); }
   .stijl-actief { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4CAF50; margin-top: 8px; }
   .stijl-actief-dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF50; }
+  .stijl-opgeslagen { font-size: 10px; color: #4CAF50; margin-top: 6px; display: none; }
 
+  /* BIBLIOTHEEK */
   .bibliotheek-sectie { background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 14px; padding: 20px; margin-bottom: 24px; }
   .bibliotheek-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; cursor: pointer; }
   .bibliotheek-titel { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
   .bibliotheek-count { font-size: 10px; background: var(--bg4); border: 1px solid #333; color: var(--grijs2); padding: 2px 8px; border-radius: 100px; }
   .bibliotheek-leeg { font-size: 12px; color: #444; text-align: center; padding: 20px 0; }
-  .bibl-item { background: var(--bg2); border: 1px solid #222; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; position: relative; transition: border-color 0.2s; }
+  .bibl-item { background: var(--bg2); border: 1px solid #222; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; transition: border-color 0.2s; }
   .bibl-item:hover { border-color: #333; }
   .bibl-item.favoriet { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.03); }
   .bibl-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -153,12 +163,25 @@
   .bibl-btn:hover { border-color: var(--o); color: var(--o); }
   .bibl-btn.fav-btn { font-size: 13px; padding: 3px 6px; }
   .bibl-btn.fav-btn.actief { border-color: rgba(255,215,0,0.5); color: gold; background: rgba(255,215,0,0.08); }
-  .bibl-btn.gebruik-btn.actief { border-color: #4CAF50; color: #4CAF50; background: rgba(76,175,80,0.08); }
   .bibl-preview { font-size: 11px; color: #555; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .bibl-meta { font-size: 10px; color: #444; margin-top: 6px; }
   .opslaan-btn { font-size: 11px; color: var(--grijs2); background: none; border: 1px solid #2a2a2a; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 4px 10px; border-radius: 4px; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
   .opslaan-btn:hover { border-color: #4CAF50; color: #4CAF50; }
   .opslaan-btn.opgeslagen { border-color: #4CAF50; color: #4CAF50; background: rgba(76,175,80,0.08); }
+  .vertaal-btn { font-size: 11px; color: var(--grijs2); background: none; border: 1px solid #2a2a2a; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 4px 10px; border-radius: 4px; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+  .vertaal-btn:hover { border-color: #4169E1; color: #6495ED; }
+
+  /* PAND ARCHIEF */
+  .archief-sectie { background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+  .archief-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; cursor: pointer; }
+  .archief-titel { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .archief-zoek { width: 100%; background: var(--bg4); border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--wit); outline: none; margin-bottom: 10px; transition: border-color 0.2s; }
+  .archief-zoek:focus { border-color: var(--o); }
+  .archief-item { background: var(--bg4); border: 1px solid #222; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+  .archief-item:hover { border-color: var(--o); background: rgba(242,106,27,0.04); }
+  .archief-item-adres { font-size: 13px; font-weight: 600; color: var(--wit); margin-bottom: 4px; }
+  .archief-item-meta { font-size: 11px; color: var(--grijs); display: flex; gap: 10px; }
+  .archief-leeg { font-size: 12px; color: #444; text-align: center; padding: 16px 0; }
 
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
@@ -187,10 +210,10 @@
       <div class="stijl-sectie-header">
         <div class="stijl-titel">✍️ Jouw schrijfstijl <span class="stijl-badge">Uniek</span></div>
       </div>
-      <div class="stijl-sub">Plak 1-3 van jouw beste verkoopteksten — PandAI leert hoe jij schrijft en past die stijl toe op elke nieuwe tekst.</div>
+      <div class="stijl-sub">Plak 1-3 van jouw beste verkoopteksten — PandAI leert hoe jij schrijft en onthoudt dit voor volgende keer.</div>
       <div class="stijl-teksten" id="stijl-teksten">
         <div class="stijl-tekst-item">
-          <textarea rows="4" placeholder="Plak hier een voorbeeld van jouw schrijfstijl... (bijv. een eerder geschreven Funda tekst)" oninput="stijlTekstGewijzigd(this)"></textarea>
+          <textarea rows="4" placeholder="Plak hier een voorbeeld van jouw schrijfstijl..." oninput="stijlTekstGewijzigd(this)"></textarea>
           <button class="stijl-verwijder" onclick="verwijderStijlTekst(this)" title="Verwijder">✕</button>
         </div>
       </div>
@@ -199,16 +222,30 @@
         <div class="stijl-actief-dot"></div>
         <span id="stijl-actief-tekst">Schrijfstijl actief — PandAI schrijft zoals jij</span>
       </div>
+      <div class="stijl-opgeslagen" id="stijl-opgeslagen">✓ Schrijfstijl opgeslagen</div>
+    </div>
+
+    <!-- PAND ARCHIEF -->
+    <div class="archief-sectie">
+      <div class="archief-header" onclick="toggleArchief()">
+        <div class="archief-titel">🏠 Pand archief <span class="bibliotheek-count" id="archief-count">0</span></div>
+        <span style="color:var(--grijs);font-size:12px" id="archief-pijl">▾</span>
+      </div>
+      <div id="archief-inhoud">
+        <input type="text" class="archief-zoek" placeholder="🔍 Zoek op adres..." oninput="zoekArchief(this.value)">
+        <div class="archief-leeg" id="archief-leeg">Nog geen panden opgeslagen. Sla een tekst op om hem hier te bewaren.</div>
+        <div id="archief-lijst"></div>
+      </div>
     </div>
 
     <!-- BIBLIOTHEEK -->
     <div class="bibliotheek-sectie">
       <div class="bibliotheek-header" onclick="toggleBibliotheek()">
-        <div class="bibliotheek-titel">📚 Mijn tekstbibliotheek <span class="bibliotheek-count" id="bibl-count">0</span></div>
+        <div class="bibliotheek-titel">📚 Tekstbibliotheek <span class="bibliotheek-count" id="bibl-count">0</span></div>
         <span style="color:var(--grijs);font-size:12px" id="bibl-pijl">▾</span>
       </div>
       <div id="bibliotheek-inhoud">
-        <div class="bibliotheek-leeg" id="bibl-leeg">Nog geen teksten opgeslagen. Genereer een tekst en klik op "Opslaan" om hem hier te bewaren.</div>
+        <div class="bibliotheek-leeg" id="bibl-leeg">Nog geen teksten opgeslagen.</div>
         <div id="bibl-lijst"></div>
       </div>
     </div>
@@ -244,26 +281,15 @@
     </button>
 
     <div class="handmatig-formulier" id="handmatig-formulier">
-
-      <!-- BASISINFORMATIE -->
       <div class="form-sectie" style="margin-top:16px">
         <div class="form-sectie-titel">Basisinformatie</div>
         <div class="veld">
           <label>Type woning</label>
           <select id="type">
-            <option>Tussenwoning</option>
-            <option>Hoekwoning</option>
-            <option>Vrijstaande woning</option>
-            <option>Twee-onder-een-kap</option>
-            <option>Geschakelde woning</option>
-            <option>Appartement</option>
-            <option>Penthouse</option>
-            <option>Maisonette</option>
-            <option>Villa</option>
-            <option>Bungalow</option>
-            <option>Woonboerderij</option>
-            <option>Grachtenpand</option>
-            <option>Landhuis</option>
+            <option>Tussenwoning</option><option>Hoekwoning</option><option>Vrijstaande woning</option>
+            <option>Twee-onder-een-kap</option><option>Geschakelde woning</option><option>Appartement</option>
+            <option>Penthouse</option><option>Maisonette</option><option>Villa</option><option>Bungalow</option>
+            <option>Woonboerderij</option><option>Grachtenpand</option><option>Landhuis</option>
           </select>
         </div>
         <div class="veld-rij">
@@ -289,77 +315,49 @@
             </select>
           </div>
         </div>
-        <div class="veld"><label>Adres / Stad / Buurt</label><input type="text" id="locatie" placeholder="Van Heemstraweg, Druten (Gelderland)"></div>
+        <div class="veld">
+          <label>Adres / Stad / Buurt</label>
+          <div class="adres-wrapper">
+            <input type="text" id="locatie" placeholder="Begin met typen voor suggesties..." oninput="zoekAdres(this.value)" onblur="setTimeout(sluitDropdown, 200)" autocomplete="off">
+            <div class="adres-dropdown" id="adres-dropdown"></div>
+          </div>
+        </div>
         <div class="veld-rij">
           <div class="veld"><label>Vraagprijs</label><input type="text" id="prijs" placeholder="€ 425.000"></div>
           <div class="veld">
             <label>Status</label>
             <select id="status">
-              <option>Beschikbaar</option>
-              <option>Onder bod</option>
-              <option>Verkocht</option>
-              <option>Nieuwbouw</option>
+              <option>Beschikbaar</option><option>Onder bod</option><option>Verkocht</option><option>Nieuwbouw</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- WOONLAGEN -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Indeling woning</div>
-        <div class="veld">
-          <label>Begane grond</label>
-          <textarea id="bg-grond" rows="2" placeholder="Hal, toilet, woonkamer met open keuken, bijkeuken, garage"></textarea>
-        </div>
-        <div class="veld">
-          <label>1e verdieping</label>
-          <textarea id="verdieping1" rows="2" placeholder="3 slaapkamers, badkamer met douche en ligbad, apart toilet"></textarea>
-        </div>
-        <div class="veld">
-          <label>2e verdieping / Zolder</label>
-          <textarea id="verdieping2" rows="2" placeholder="Zolderkamer, berging, CV-installatie"></textarea>
-        </div>
+        <div class="veld"><label>Begane grond</label><textarea id="bg-grond" rows="2" placeholder="Hal, toilet, woonkamer met open keuken, bijkeuken, garage"></textarea></div>
+        <div class="veld"><label>1e verdieping</label><textarea id="verdieping1" rows="2" placeholder="3 slaapkamers, badkamer met douche en ligbad, apart toilet"></textarea></div>
+        <div class="veld"><label>2e verdieping / Zolder</label><textarea id="verdieping2" rows="2" placeholder="Zolderkamer, berging, CV-installatie"></textarea></div>
       </div>
 
-      <!-- KEUKEN -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Keuken</div>
         <div class="veld-rij">
-          <div class="veld">
-            <label>Type keuken</label>
-            <select id="keuken-type">
-              <option value="">Niet opgeven</option>
-              <option>Open keuken</option>
-              <option>Halfopen keuken</option>
-              <option>Gesloten keuken</option>
-              <option>Keuken-eetkamer</option>
-            </select>
-          </div>
-          <div class="veld">
-            <label>Keukenopstelling</label>
-            <select id="keuken-opstelling">
-              <option value="">Niet opgeven</option>
-              <option>Rechte keuken</option>
-              <option>L-keuken</option>
-              <option>U-keuken</option>
-              <option>Kookeiland</option>
-              <option>Hoefijzerkeuken</option>
-            </select>
-          </div>
+          <div class="veld"><label>Type keuken</label><select id="keuken-type"><option value="">Niet opgeven</option><option>Open keuken</option><option>Halfopen keuken</option><option>Gesloten keuken</option><option>Keuken-eetkamer</option></select></div>
+          <div class="veld"><label>Keukenopstelling</label><select id="keuken-opstelling"><option value="">Niet opgeven</option><option>Rechte keuken</option><option>L-keuken</option><option>U-keuken</option><option>Kookeiland</option></select></div>
         </div>
         <div class="checkbox-grid" id="keuken-kenmerken">
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Inbouwapparatuur</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Quooker / kokendwaterkraan</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Quooker</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vaatwasser</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Inductiekookplaat</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Gaskookplaat</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Wijnklimaatkast</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Granieten aanrechtblad</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Composiet aanrechtblad</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Granieten aanrecht</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Composiet aanrecht</span></label>
         </div>
       </div>
 
-      <!-- BADKAMER -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Badkamer</div>
         <div class="checkbox-grid" id="badkamer-kenmerken">
@@ -367,47 +365,24 @@
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Ligbad</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Inloopdouche</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dubbele wastafel</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vloerverwarming badkamer</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Badkamermeubel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vloerverwarming</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Regendouche</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Badkamermeubel</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Sauna</span></label>
         </div>
       </div>
 
-      <!-- VERWARMING & ENERGIE -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Verwarming & Energie</div>
         <div class="veld-rij">
-          <div class="veld">
-            <label>Verwarmingstype</label>
-            <select id="verwarming">
-              <option value="">Niet opgeven</option>
-              <option>CV-ketel</option>
-              <option>Warmtepomp</option>
-              <option>Stadsverwarming</option>
-              <option>Vloerverwarming (volledig)</option>
-              <option>Blokverwarming</option>
-              <option>Gaskachels</option>
-            </select>
-          </div>
-          <div class="veld">
-            <label>Warm water</label>
-            <select id="warm-water">
-              <option value="">Niet opgeven</option>
-              <option>CV-ketel</option>
-              <option>Elektrische boiler</option>
-              <option>Warmtepomp boiler</option>
-              <option>Zonneboiler</option>
-            </select>
-          </div>
+          <div class="veld"><label>Verwarmingstype</label><select id="verwarming"><option value="">Niet opgeven</option><option>CV-ketel</option><option>Warmtepomp</option><option>Stadsverwarming</option><option>Vloerverwarming (volledig)</option></select></div>
+          <div class="veld"><label>Warm water</label><select id="warm-water"><option value="">Niet opgeven</option><option>CV-ketel</option><option>Elektrische boiler</option><option>Warmtepomp boiler</option><option>Zonneboiler</option></select></div>
         </div>
         <div class="checkbox-grid" id="energie-kenmerken">
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zonnepanelen</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vloerverwarming</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Airconditioning</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Warmtepomp</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zonneboiler</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Ventilatiesysteem</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dubbel glas (HR++)</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Triple glas</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Spouwmuurisolatie</span></label>
@@ -415,38 +390,24 @@
         </div>
       </div>
 
-      <!-- TUIN & BUITENRUIMTE -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Tuin & Buitenruimte</div>
         <div class="veld-rij">
-          <div class="veld">
-            <label>Tuinligging</label>
-            <select id="tuin-ligging">
-              <option value="">Geen tuin</option>
-              <option>Noord</option><option>Noord-oost</option><option>Oost</option>
-              <option>Zuid-oost</option><option>Zuid</option><option>Zuid-west</option>
-              <option>West</option><option>Noord-west</option>
-            </select>
-          </div>
+          <div class="veld"><label>Tuinligging</label><select id="tuin-ligging"><option value="">Geen tuin</option><option>Noord</option><option>Oost</option><option>Zuid</option><option>West</option><option>Zuid-west</option><option>Zuid-oost</option></select></div>
           <div class="veld"><label>Tuinoppervlak (m²)</label><input type="number" id="tuin-oppervlak" placeholder="80"></div>
         </div>
         <div class="checkbox-grid" id="tuin-kenmerken">
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Achtertuin</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Voortuin</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zijtuin</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Terras</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakterras</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Balkon</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Loggia</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Veranda</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zwembad</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Jacuzzi buiten</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Schuur / berging</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Serre</span></label>
         </div>
       </div>
 
-      <!-- PARKEREN & OPSLAG -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Parkeren & Opslag</div>
         <div class="checkbox-grid" id="parkeren-kenmerken">
@@ -454,64 +415,46 @@
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dubbele garage</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Carport</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Oprit / eigen parkeerplaats</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Parkeerkelder</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Laadpaal elektrisch</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Berging</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Kelder</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zolder</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Hobbyruimte</span></label>
         </div>
       </div>
 
-      <!-- WOONCOMFORT -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Wooncomfort & Interieur</div>
         <div class="checkbox-grid" id="comfort-kenmerken">
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Open woonkamer</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Hoge plafonds</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakkapel</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakraam / Velux</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Erker / uitbouw</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Lichtkoepel</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Open haard</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Houtkachel</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Rolstoeltoegankelijk</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Lift aanwezig</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Smarthome systeem</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Alarmsysteem</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Videodeurbel</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Ingebouwde kasten</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Wasruimte</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Werkruimte / kantoor</span></label>
         </div>
       </div>
 
-      <!-- LOCATIE & OMGEVING -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Locatie & Omgeving</div>
         <div class="checkbox-grid" id="locatie-kenmerken">
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Rustige straat</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Doodlopende straat</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Centrum / binnenstad</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Aan het water</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vrij uitzicht</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Natuur / groen in de buurt</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Nabij openbaar vervoer</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Nabij snelweg</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Scholen in de buurt</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Winkels op loopafstand</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Recreatiemogelijkheden</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Sportvoorzieningen</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Natuur / groen in de buurt</span></label>
         </div>
       </div>
 
-      <!-- EXTRA -->
       <div class="form-sectie">
         <div class="form-sectie-titel">Extra informatie</div>
-        <div class="veld"><textarea id="extra" rows="3" placeholder="Bijv: recent volledig gerenoveerd, uniek uitzicht op de gracht, monumentaal pand, kantoor aan huis mogelijk..."></textarea></div>
+        <div class="veld"><textarea id="extra" rows="3" placeholder="Bijv: recent volledig gerenoveerd, uniek uitzicht op de gracht..."></textarea></div>
       </div>
-
-    </div><!-- einde handmatig-formulier -->
+    </div>
 
     <div class="toon-label">Schrijfstijl</div>
     <div class="toon-grid">
@@ -526,7 +469,6 @@
       <span class="spinner" id="spinner"></span>
       <span id="btn-tekst">✨ Genereer verkoopteksten</span>
     </button>
-
     <div class="fout-melding" id="fout-melding"></div>
   </div>
 
@@ -570,13 +512,15 @@
         <div class="tekst-inhoud" id="titel-inhoud"></div>
       </div>
       <div class="tekst-blok">
-        <div class="tekst-blok-header"><span class="tekst-blok-label">📝 Korte omschrijving (Funda intro)</span><button class="kopieer-btn" onclick="kopieer('kort-inhoud', this)">📋 Kopiëren</button></div>
+        <div class="tekst-blok-header"><span class="tekst-blok-label">📝 Korte omschrijving</span><button class="kopieer-btn" onclick="kopieer('kort-inhoud', this)">📋 Kopiëren</button></div>
         <div class="tekst-inhoud" id="kort-inhoud"></div>
       </div>
       <div class="tekst-blok">
-        <div class="tekst-blok-header"><span class="tekst-blok-label">📄 Volledige verkooptekst</span>
+        <div class="tekst-blok-header">
+          <span class="tekst-blok-label">📄 Volledige verkooptekst</span>
           <div style="display:flex;gap:6px">
             <button class="opslaan-btn" id="opslaan-btn" onclick="slaVolledigOp(this)">💾 Opslaan</button>
+            <button class="vertaal-btn" id="vertaal-btn" onclick="vertaalNaarEngels(this)">🇬🇧 Vertaal</button>
             <button class="kopieer-btn" onclick="kopieer('volledig-inhoud', this)">📋 Kopiëren</button>
           </div>
         </div>
@@ -591,28 +535,66 @@
 </div>
 
 <script>
-  // Auth check
-  const pandaiCode = sessionStorage.getItem("pandai_code");
-  const pandaiNaam = sessionStorage.getItem("pandai_naam");
-  if (!pandaiCode) { window.location.href = "/"; }
+  // ===== AUTH =====
+  const pandaiCode = sessionStorage.getItem('pandai_code');
+  const pandaiNaam = sessionStorage.getItem('pandai_naam');
+  if (!pandaiCode) { window.location.href = '/'; }
   else {
-    const navEl = document.getElementById("nav-gebruiker");
-    if (navEl) navEl.textContent = pandaiNaam || pandaiCode; + (pandaiNaam || pandaiCode);
+    const navEl = document.getElementById('nav-gebruiker');
+    if (navEl) navEl.textContent = pandaiNaam || pandaiCode;
   }
   function uitloggen() {
-    sessionStorage.removeItem("pandai_code");
-    sessionStorage.removeItem("pandai_naam");
-    window.location.href = "/";
+    sessionStorage.removeItem('pandai_code');
+    sessionStorage.removeItem('pandai_naam');
+    window.location.href = '/';
   }
+
   let geselecteerdeToon = 'Professioneel en betrouwbaar';
-  let huidigBestand = null;
-  let uitgelezenTekst = '';
-  let bestandBase64 = '';
-  let bestandMediaType = '';
+  let huidigBestand = null, uitgelezenTekst = '', bestandBase64 = '', bestandMediaType = '';
+
+  // ===== SCHRIJFSTIJL GEHEUGEN =====
+  const STIJL_KEY = 'pandai_stijl_' + (pandaiCode || 'default');
+  let stijlOpslaanTimeout = null;
+
+  function laadOpgeslagenStijl() {
+    try {
+      const opgeslagen = JSON.parse(localStorage.getItem(STIJL_KEY) || '[]');
+      if (opgeslagen.length === 0) return;
+      const container = document.getElementById('stijl-teksten');
+      // Vul eerste veld
+      const eersteTA = container.querySelector('textarea');
+      if (eersteTA && opgeslagen[0]) {
+        eersteTA.value = opgeslagen[0];
+        eersteTA.classList.toggle('heeft-tekst', opgeslagen[0].length > 0);
+      }
+      // Voeg extra velden toe voor meer teksten
+      for (let i = 1; i < opgeslagen.length; i++) {
+        const nieuw = document.createElement('div');
+        nieuw.className = 'stijl-tekst-item';
+        nieuw.innerHTML = '<textarea rows="4" oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)">✕</button>';
+        container.appendChild(nieuw);
+        const ta = nieuw.querySelector('textarea');
+        ta.value = opgeslagen[i];
+        ta.classList.toggle('heeft-tekst', opgeslagen[i].length > 0);
+      }
+      updateStijlStatus();
+    } catch(e) {}
+  }
+
+  function slaStijlOp() {
+    clearTimeout(stijlOpslaanTimeout);
+    stijlOpslaanTimeout = setTimeout(function() {
+      const teksten = Array.from(document.querySelectorAll('#stijl-teksten textarea')).map(function(t) { return t.value; });
+      localStorage.setItem(STIJL_KEY, JSON.stringify(teksten));
+      const el = document.getElementById('stijl-opgeslagen');
+      if (el) { el.style.display = 'block'; setTimeout(function() { el.style.display = 'none'; }, 2000); }
+    }, 1000);
+  }
 
   function stijlTekstGewijzigd(el) {
     el.classList.toggle('heeft-tekst', el.value.trim().length > 0);
     updateStijlStatus();
+    slaStijlOp();
   }
 
   function updateStijlStatus() {
@@ -631,7 +613,7 @@
     const container = document.getElementById('stijl-teksten');
     const nieuw = document.createElement('div');
     nieuw.className = 'stijl-tekst-item';
-    nieuw.innerHTML = '<textarea rows="4" placeholder="Plak hier een volgende voorbeeldtekst..." oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)" title="Verwijder">✕</button>';
+    nieuw.innerHTML = '<textarea rows="4" placeholder="Plak hier een volgende voorbeeldtekst..." oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)">✕</button>';
     container.appendChild(nieuw);
   }
 
@@ -645,16 +627,128 @@
       item.querySelector('textarea').classList.remove('heeft-tekst');
     }
     updateStijlStatus();
+    slaStijlOp();
   }
 
   function verzamelStijlTeksten() {
     return Array.from(document.querySelectorAll('#stijl-teksten textarea'))
-      .map(el => el.value.trim())
-      .filter(t => t.length > 50);
+      .map(function(el) { return el.value.trim(); })
+      .filter(function(t) { return t.length > 50; });
   }
 
-  // BIBLIOTHEEK
-  let bibliotheekOpen = true;
+  // ===== ADRES AUTOCOMPLETE =====
+  var adresTimeout = null;
+  function zoekAdres(query) {
+    clearTimeout(adresTimeout);
+    var dropdown = document.getElementById('adres-dropdown');
+    if (query.length < 3) { dropdown.style.display = 'none'; return; }
+    adresTimeout = setTimeout(function() {
+      fetch('https://api.pdok.nl/bzk/locatieserver/search/v3_1/suggest?q=' + encodeURIComponent(query) + '&rows=6&fq=type:adres')
+        .then(function(r) { return r.json(); })
+        .then(function(json) {
+          var docs = (json.response && json.response.docs) ? json.response.docs : [];
+          if (docs.length === 0) { dropdown.style.display = 'none'; return; }
+          dropdown.innerHTML = '';
+          docs.forEach(function(d) {
+            var el = document.createElement('div');
+            el.className = 'adres-optie';
+            el.textContent = d.weergavenaam || '';
+            el.addEventListener('mousedown', function() { kiesAdres(d.weergavenaam || ''); });
+            dropdown.appendChild(el);
+          });
+          dropdown.style.display = 'block';
+        })
+        .catch(function() { dropdown.style.display = 'none'; });
+    }, 300);
+  }
+
+  function kiesAdres(adres) {
+    document.getElementById('locatie').value = adres;
+    document.getElementById('adres-dropdown').style.display = 'none';
+  }
+
+  function sluitDropdown() {
+    var dropdown = document.getElementById('adres-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+
+  // ===== PAND ARCHIEF =====
+  var archiefOpen = true;
+  var ARCHIEF_KEY = 'pandai_archief_' + (pandaiCode || 'default');
+
+  function toggleArchief() {
+    archiefOpen = !archiefOpen;
+    document.getElementById('archief-inhoud').style.display = archiefOpen ? 'block' : 'none';
+    document.getElementById('archief-pijl').textContent = archiefOpen ? '▴' : '▾';
+  }
+
+  function getArchief() {
+    try { return JSON.parse(localStorage.getItem(ARCHIEF_KEY) || '[]'); } catch { return []; }
+  }
+
+  function saveArchief(items) {
+    localStorage.setItem(ARCHIEF_KEY, JSON.stringify(items));
+  }
+
+  function slaOpInArchief(adres, titel, kort, volledig, social) {
+    if (!adres) return;
+    var archief = getArchief();
+    var bestaand = archief.find(function(p) { return p.adres === adres; });
+    var versie = { id: Date.now(), datum: new Date().toLocaleDateString('nl-NL'), titel: titel, kort: kort, volledig: volledig, social: social };
+    if (bestaand) {
+      bestaand.versies = bestaand.versies || [];
+      bestaand.versies.unshift(versie);
+      if (bestaand.versies.length > 5) bestaand.versies.pop();
+      bestaand.datum = versie.datum;
+    } else {
+      archief.unshift({ adres: adres, datum: versie.datum, versies: [versie] });
+    }
+    if (archief.length > 50) archief.pop();
+    saveArchief(archief);
+    renderArchief();
+  }
+
+  function zoekArchief(query) { renderArchief(query); }
+
+  function renderArchief(filter) {
+    var archief = getArchief();
+    var lijst = document.getElementById('archief-lijst');
+    var leeg = document.getElementById('archief-leeg');
+    var count = document.getElementById('archief-count');
+    count.textContent = archief.length;
+    var gefilterd = filter ? archief.filter(function(p) { return p.adres.toLowerCase().includes(filter.toLowerCase()); }) : archief;
+    leeg.style.display = gefilterd.length === 0 ? 'block' : 'none';
+    lijst.innerHTML = '';
+    gefilterd.forEach(function(pand) {
+      var el = document.createElement('div');
+      el.className = 'archief-item';
+      el.innerHTML = '<div class="archief-item-adres">&#127968; ' + pand.adres + '</div><div class="archief-item-meta"><span>' + (pand.versies ? pand.versies.length : 1) + ' versie(s)</span><span>Laatste: ' + pand.datum + '</span></div>';
+      el.addEventListener('click', function() { laadVanuitArchief(pand.adres); });
+      lijst.appendChild(el);
+    });
+  }
+
+  function laadVanuitArchief(adres) {
+    var archief = getArchief();
+    var pand = archief.find(function(p) { return p.adres === adres; });
+    if (!pand || !pand.versies || pand.versies.length === 0) return;
+    var versie = pand.versies[0];
+    document.getElementById('locatie').value = adres;
+    document.getElementById('titel-inhoud').textContent = versie.titel || '';
+    document.getElementById('kort-inhoud').textContent = versie.kort || '';
+    document.getElementById('volledig-inhoud').textContent = versie.volledig || '';
+    document.getElementById('social-inhoud').textContent = versie.social || '';
+    document.getElementById('leeg-state').style.display = 'none';
+    document.getElementById('tekst-output').style.display = 'flex';
+    document.getElementById('score-rij').style.display = 'flex';
+    document.getElementById('kopieer-alles').style.display = 'flex';
+    document.getElementById('opnieuw-btn').style.display = 'flex';
+    document.querySelector('.paneel-rechts').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ===== BIBLIOTHEEK =====
+  var bibliotheekOpen = true;
+  var BIBL_KEY = 'pandai_bibliotheek_' + (pandaiCode || 'default');
 
   function toggleBibliotheek() {
     bibliotheekOpen = !bibliotheekOpen;
@@ -663,69 +757,54 @@
   }
 
   function getBibliotheek() {
-    try { return JSON.parse(localStorage.getItem('pandai_bibliotheek') || '[]'); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(BIBL_KEY) || '[]'); } catch { return []; }
   }
 
-  function saveBibliotheek(items) {
-    localStorage.setItem('pandai_bibliotheek', JSON.stringify(items));
-  }
+  function saveBibliotheek(items) { localStorage.setItem(BIBL_KEY, JSON.stringify(items)); }
 
   function slaVolledigOp(btn) {
-    const tekst = document.getElementById('volledig-inhoud').textContent.trim();
-    const titel = document.getElementById('titel-inhoud').textContent.trim();
+    var tekst = document.getElementById('volledig-inhoud').textContent.trim();
+    var titel = document.getElementById('titel-inhoud').textContent.trim();
+    var kort = document.getElementById('kort-inhoud').textContent.trim();
+    var social = document.getElementById('social-inhoud').textContent.trim();
+    var adres = document.getElementById('locatie') ? document.getElementById('locatie').value.trim() : '';
     if (!tekst) return;
-
-    const items = getBibliotheek();
-    const item = {
-      id: Date.now(),
-      titel: titel || 'Verkooptekst ' + new Date().toLocaleDateString('nl-NL'),
-      tekst: tekst,
-      datum: new Date().toLocaleDateString('nl-NL'),
-      favoriet: false
-    };
+    var items = getBibliotheek();
+    var item = { id: Date.now(), titel: titel || 'Verkooptekst ' + new Date().toLocaleDateString('nl-NL'), tekst: tekst, datum: new Date().toLocaleDateString('nl-NL'), favoriet: false };
     items.unshift(item);
     if (items.length > 20) items.pop();
     saveBibliotheek(items);
-
+    if (adres) slaOpInArchief(adres, titel, kort, tekst, social);
     btn.textContent = '✓ Opgeslagen';
     btn.classList.add('opgeslagen');
-    setTimeout(() => { btn.textContent = '💾 Opslaan'; btn.classList.remove('opgeslagen'); }, 2000);
-
+    setTimeout(function() { btn.textContent = '💾 Opslaan'; btn.classList.remove('opgeslagen'); }, 2000);
     renderBibliotheek();
     laadFavorieten();
   }
 
   function toggleFavoriet(id) {
-    const items = getBibliotheek();
-    const item = items.find(i => i.id === id);
-    if (item) {
-      item.favoriet = !item.favoriet;
-      saveBibliotheek(items);
-      renderBibliotheek();
-      laadFavorieten();
-    }
+    var items = getBibliotheek();
+    var item = items.find(function(i) { return i.id === id; });
+    if (item) { item.favoriet = !item.favoriet; saveBibliotheek(items); renderBibliotheek(); laadFavorieten(); }
   }
 
   function verwijderUitBibliotheek(id) {
-    const items = getBibliotheek().filter(i => i.id !== id);
+    var items = getBibliotheek().filter(function(i) { return i.id !== id; });
     saveBibliotheek(items);
     renderBibliotheek();
     laadFavorieten();
   }
 
   function gebruikAlsStijl(id) {
-    const item = getBibliotheek().find(i => i.id === id);
+    var item = getBibliotheek().find(function(i) { return i.id === id; });
     if (!item) return;
-
-    // Voeg toe aan stijl tekstgebied
-    const container = document.getElementById('stijl-teksten');
-    const leegVeld = Array.from(container.querySelectorAll('textarea')).find(t => !t.value.trim());
-
+    var container = document.getElementById('stijl-teksten');
+    var leegVeld = Array.from(container.querySelectorAll('textarea')).find(function(t) { return !t.value.trim(); });
     if (leegVeld) {
       leegVeld.value = item.tekst;
       leegVeld.classList.add('heeft-tekst');
     } else {
-      const nieuw = document.createElement('div');
+      var nieuw = document.createElement('div');
       nieuw.className = 'stijl-tekst-item';
       nieuw.innerHTML = '<textarea rows="4" oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)">✕</button>';
       container.appendChild(nieuw);
@@ -733,25 +812,21 @@
       nieuw.querySelector('textarea').classList.add('heeft-tekst');
     }
     updateStijlStatus();
-
-    // Scroll naar stijl sectie
+    slaStijlOp();
     document.querySelector('.stijl-sectie').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function laadFavorieten() {
-    const favorieten = getBibliotheek().filter(i => i.favoriet);
-    const container = document.getElementById('stijl-teksten');
-
-    // Verwijder bestaande favoriet-items
-    container.querySelectorAll('.favoriet-auto').forEach(el => el.remove());
-
+    var favorieten = getBibliotheek().filter(function(i) { return i.favoriet; });
+    var container = document.getElementById('stijl-teksten');
+    container.querySelectorAll('.favoriet-auto').forEach(function(el) { el.remove(); });
     if (favorieten.length > 0) {
-      favorieten.slice(0, 3).forEach(fav => {
-        const bestaatAl = Array.from(container.querySelectorAll('textarea')).some(t => t.value.trim() === fav.tekst.trim());
+      favorieten.slice(0, 3).forEach(function(fav) {
+        var bestaatAl = Array.from(container.querySelectorAll('textarea')).some(function(t) { return t.value.trim() === fav.tekst.trim(); });
         if (!bestaatAl) {
-          const nieuw = document.createElement('div');
+          var nieuw = document.createElement('div');
           nieuw.className = 'stijl-tekst-item favoriet-auto';
-          nieuw.innerHTML = '<div style="font-size:10px;color:gold;margin-bottom:4px">⭐ ' + fav.titel + '</div><textarea rows="3" oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)">✕</button>';
+          nieuw.innerHTML = '<div style="font-size:10px;color:gold;margin-bottom:4px">&#11088; ' + fav.titel + '</div><textarea rows="3" oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)">✕</button>';
           container.appendChild(nieuw);
           nieuw.querySelector('textarea').value = fav.tekst;
           nieuw.querySelector('textarea').classList.add('heeft-tekst');
@@ -762,71 +837,124 @@
   }
 
   function renderBibliotheek() {
-    const items = getBibliotheek();
-    const lijst = document.getElementById('bibl-lijst');
-    const leeg = document.getElementById('bibl-leeg');
-    const count = document.getElementById('bibl-count');
-
+    var items = getBibliotheek();
+    var lijst = document.getElementById('bibl-lijst');
+    var leeg = document.getElementById('bibl-leeg');
+    var count = document.getElementById('bibl-count');
     count.textContent = items.length;
     leeg.style.display = items.length === 0 ? 'block' : 'none';
-
-    lijst.innerHTML = items.map(item => {
-      const preview = item.tekst.substring(0, 120) + '...';
-      return '<div class="bibl-item ' + (item.favoriet ? 'favoriet' : '') + '" id="bibl-' + item.id + '">' +
-        '<div class="bibl-item-header">' +
-          '<div class="bibl-item-titel">' + (item.favoriet ? '⭐ ' : '') + item.titel + '</div>' +
-          '<div class="bibl-acties">' +
-            '<button class="bibl-btn fav-btn ' + (item.favoriet ? 'actief' : '') + '" onclick="toggleFavoriet(' + item.id + ')" title="' + (item.favoriet ? 'Verwijder favoriet' : 'Markeer als favoriet') + '">⭐</button>' +
-            '<button class="bibl-btn gebruik-btn" onclick="gebruikAlsStijl(' + item.id + ')">Als stijl</button>' +
-            '<button class="bibl-btn" onclick="verwijderUitBibliotheek(' + item.id + ')" style="color:#555">✕</button>' +
-          '</div>' +
-        '</div>' +
+    lijst.innerHTML = items.map(function(item) {
+      var preview = item.tekst.substring(0, 120) + '...';
+      return '<div class="bibl-item ' + (item.favoriet ? 'favoriet' : '') + '">' +
+        '<div class="bibl-item-header"><div class="bibl-item-titel">' + (item.favoriet ? '&#11088; ' : '') + item.titel + '</div>' +
+        '<div class="bibl-acties">' +
+        '<button class="bibl-btn fav-btn ' + (item.favoriet ? 'actief' : '') + '" onclick="toggleFavoriet(' + item.id + ')">&#11088;</button>' +
+        '<button class="bibl-btn gebruik-btn" onclick="gebruikAlsStijl(' + item.id + ')">Als stijl</button>' +
+        '<button class="bibl-btn" onclick="verwijderUitBibliotheek(' + item.id + ')" style="color:#555">&#10005;</button>' +
+        '</div></div>' +
         '<div class="bibl-preview">' + preview + '</div>' +
-        '<div class="bibl-meta">' + item.datum + '</div>' +
-        '</div>';
+        '<div class="bibl-meta">' + item.datum + '</div></div>';
     }).join('');
   }
 
-  // Init
+  // ===== VERTALING =====
+  async function vertaalNaarEngels(btn) {
+    var volledig = document.getElementById('volledig-inhoud').textContent.trim();
+    var titel = document.getElementById('titel-inhoud').textContent.trim();
+    if (!volledig) return;
+    var origTekst = btn.textContent;
+    btn.textContent = '⏳ Bezig...';
+    btn.disabled = true;
+    try {
+      var resp = await fetch('/api/genereer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toon: 'Professioneel en betrouwbaar', tekst: 'Vertaal de volgende Nederlandse vastgoedtekst naar professioneel Engels. Behoud dezelfde structuur. Geef terug als:\nTITEL: [engelse titel]\nVOLLEDIG:\n[engelse tekst]\n\nTekst:\nTITEL: ' + titel + '\n\nVOLLEDIG:\n' + volledig })
+      });
+      var json = await resp.json();
+      if (!resp.ok) throw new Error(json.error);
+      var engelsVolledig = parseSectie(json.resultaat, 'VOLLEDIG') || json.resultaat;
+      var engelsTitel = parseSectie(json.resultaat, 'TITEL') || titel;
+      toonVertaling(engelsTitel, engelsVolledig);
+    } catch(e) { alert('Vertaling mislukt: ' + e.message); }
+    btn.textContent = origTekst;
+    btn.disabled = false;
+  }
+
+  function toonVertaling(titel, tekst) {
+    var popup = document.createElement('div');
+    popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'background:#161616;border:1px solid #2a2a2a;border-radius:16px;padding:28px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto';
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px';
+    var headerTitel = document.createElement('div');
+    headerTitel.style.cssText = 'font-family:Syne,sans-serif;font-size:16px;font-weight:700';
+    headerTitel.textContent = '🇬🇧 English Translation';
+    var sluit = document.createElement('button');
+    sluit.textContent = '×';
+    sluit.style.cssText = 'background:none;border:none;color:#666;font-size:24px;cursor:pointer;line-height:1';
+    sluit.onclick = function() { popup.remove(); };
+    header.appendChild(headerTitel);
+    header.appendChild(sluit);
+    var titelEl = document.createElement('div');
+    titelEl.style.cssText = 'font-size:14px;font-weight:700;margin-bottom:12px;color:#F26A1B';
+    titelEl.textContent = titel;
+    var tekstEl = document.createElement('div');
+    tekstEl.style.cssText = 'font-size:13px;line-height:1.7;color:#ccc;white-space:pre-wrap;margin-bottom:20px';
+    tekstEl.textContent = tekst;
+    var kopieerBtn = document.createElement('button');
+    kopieerBtn.textContent = 'Copy English Text';
+    kopieerBtn.style.cssText = 'background:linear-gradient(135deg,#F26A1B,#FF8C42);color:white;border:none;border-radius:8px;padding:12px 20px;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:600;width:100%;font-size:13px';
+    kopieerBtn.onclick = function() { navigator.clipboard.writeText(tekst); kopieerBtn.textContent = 'Copied! ✓'; };
+    wrapper.appendChild(header);
+    wrapper.appendChild(titelEl);
+    wrapper.appendChild(tekstEl);
+    wrapper.appendChild(kopieerBtn);
+    popup.appendChild(wrapper);
+    popup.onclick = function(e) { if (e.target === popup) popup.remove(); };
+    document.body.appendChild(popup);
+  }
+
+  // ===== INIT =====
+  laadOpgeslagenStijl();
   renderBibliotheek();
+  renderArchief();
   laadFavorieten();
 
+  // ===== BESTAND =====
   function dragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
   function dragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
   function dropBestand(e) { e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag-over'); if (e.dataTransfer.files[0]) verwerkBestand(e.dataTransfer.files[0]); }
   function bestandGekozen(e) { if (e.target.files[0]) verwerkBestand(e.target.files[0]); }
 
   async function verwerkBestand(file) {
-    huidigBestand = file;
-    uitgelezenTekst = ''; bestandBase64 = ''; bestandMediaType = '';
-    const ext = file.name.split('.').pop().toLowerCase();
-    const iconen = { pdf:'📕', docx:'📘', doc:'📘', xlsx:'📗', xls:'📗', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', webp:'🖼️' };
-    const typen = { pdf:'PDF document', docx:'Word document', doc:'Word document', xlsx:'Excel spreadsheet', xls:'Excel spreadsheet', jpg:'Foto', jpeg:'Foto', png:'Foto', webp:'Foto' };
-    const mediatypen = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp', pdf:'application/pdf' };
-
+    huidigBestand = file; uitgelezenTekst = ''; bestandBase64 = ''; bestandMediaType = '';
+    var ext = file.name.split('.').pop().toLowerCase();
+    var iconen = { pdf:'📕', docx:'📘', doc:'📘', xlsx:'📗', xls:'📗', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', webp:'🖼️' };
+    var typen = { pdf:'PDF document', docx:'Word document', doc:'Word document', xlsx:'Excel spreadsheet', xls:'Excel spreadsheet', jpg:'Foto', jpeg:'Foto', png:'Foto', webp:'Foto' };
+    var mediatypen = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp', pdf:'application/pdf' };
     document.getElementById('bestand-icon').textContent = iconen[ext] || '📄';
     document.getElementById('bestand-naam').textContent = file.name;
     document.getElementById('bestand-type').textContent = (typen[ext] || 'Document') + ' — klaar om te verwerken';
     document.getElementById('bestand-preview').style.display = 'flex';
-
     if (['jpg','jpeg','png','webp','pdf'].includes(ext)) {
-      bestandBase64 = await naarBase64(file);
-      bestandMediaType = mediatypen[ext];
+      bestandBase64 = await naarBase64(file); bestandMediaType = mediatypen[ext];
     } else if (['docx','doc'].includes(ext)) {
-      const ab = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer: ab });
+      var ab = await file.arrayBuffer();
+      var result = await mammoth.extractRawText({ arrayBuffer: ab });
       uitgelezenTekst = result.value;
     } else if (['xlsx','xls'].includes(ext)) {
-      const ab = await file.arrayBuffer();
-      const wb = XLSX.read(ab, { type: 'array' });
-      wb.SheetNames.forEach(n => { uitgelezenTekst += XLSX.utils.sheet_to_csv(wb.Sheets[n]) + '\n'; });
+      var ab2 = await file.arrayBuffer();
+      var wb = XLSX.read(ab2, { type: 'array' });
+      wb.SheetNames.forEach(function(n) { uitgelezenTekst += XLSX.utils.sheet_to_csv(wb.Sheets[n]) + '\n'; });
     }
   }
 
   function naarBase64(file) {
-    return new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result.split(',')[1]);
+    return new Promise(function(res, rej) {
+      var r = new FileReader();
+      r.onload = function() { res(r.result.split(',')[1]); };
       r.onerror = rej;
       r.readAsDataURL(file);
     });
@@ -846,24 +974,24 @@
   function toggleCheck(el) { el.classList.toggle('actief'); }
 
   function selectToon(el, toon) {
-    document.querySelectorAll('.toon-btn').forEach(b => b.classList.remove('actief'));
+    document.querySelectorAll('.toon-btn').forEach(function(b) { b.classList.remove('actief'); });
     el.classList.add('actief'); geselecteerdeToon = toon;
   }
 
   function activeerStap(n) {
-    for (let i = 1; i <= 4; i++) {
-      const el = document.getElementById('stap-' + i);
+    for (var i = 1; i <= 4; i++) {
+      var el = document.getElementById('stap-' + i);
       el.className = 'loading-stap' + (i < n ? ' klaar' : i === n ? ' actief' : '');
     }
   }
 
   function verzamelKenmerken(containerId) {
     return Array.from(document.querySelectorAll('#' + containerId + ' .checkbox-item.actief'))
-      .map(el => el.querySelector('span').textContent);
+      .map(function(el) { return el.querySelector('span').textContent; });
   }
 
   async function genereerTekst() {
-    const btn = document.getElementById('genereer-btn');
+    var btn = document.getElementById('genereer-btn');
     btn.disabled = true;
     document.getElementById('spinner').style.display = 'block';
     document.getElementById('btn-tekst').textContent = 'Bezig...';
@@ -874,36 +1002,24 @@
     document.getElementById('score-rij').style.display = 'none';
     document.getElementById('kopieer-alles').style.display = 'none';
     document.getElementById('opnieuw-btn').style.display = 'none';
-
     activeerStap(1);
-    setTimeout(() => activeerStap(2), 800);
-    setTimeout(() => activeerStap(3), 2000);
-
+    setTimeout(function() { activeerStap(2); }, 800);
+    setTimeout(function() { activeerStap(3); }, 2000);
     try {
-      const body = { toon: geselecteerdeToon };
-
-      // Voeg schrijfstijl voorbeelden toe
-      const stijlTeksten = verzamelStijlTeksten();
-      if (stijlTeksten.length > 0) {
-        body.schrijfstijl = stijlTeksten;
-      }
-
+      var body = { toon: geselecteerdeToon };
+      var stijlTeksten = verzamelStijlTeksten();
+      if (stijlTeksten.length > 0) body.schrijfstijl = stijlTeksten;
       if (bestandBase64) {
-        body.fileBase64 = bestandBase64;
-        body.fileMediaType = bestandMediaType;
+        body.fileBase64 = bestandBase64; body.fileMediaType = bestandMediaType;
       } else if (uitgelezenTekst) {
         body.tekst = uitgelezenTekst;
       } else {
-        const alleKenmerken = [
-          ...verzamelKenmerken('keuken-kenmerken'),
-          ...verzamelKenmerken('badkamer-kenmerken'),
-          ...verzamelKenmerken('energie-kenmerken'),
-          ...verzamelKenmerken('tuin-kenmerken'),
-          ...verzamelKenmerken('parkeren-kenmerken'),
-          ...verzamelKenmerken('comfort-kenmerken'),
+        var alleKenmerken = [
+          ...verzamelKenmerken('keuken-kenmerken'), ...verzamelKenmerken('badkamer-kenmerken'),
+          ...verzamelKenmerken('energie-kenmerken'), ...verzamelKenmerken('tuin-kenmerken'),
+          ...verzamelKenmerken('parkeren-kenmerken'), ...verzamelKenmerken('comfort-kenmerken'),
           ...verzamelKenmerken('locatie-kenmerken')
         ].filter(Boolean);
-
         body.data = {
           'Type woning': document.getElementById('type').value,
           'Woonoppervlak': document.getElementById('oppervlak').value ? document.getElementById('oppervlak').value + ' m2' : '',
@@ -929,65 +1045,50 @@
           'Kenmerken': alleKenmerken.join(', '),
           'Extra informatie': document.getElementById('extra').value
         };
-
-        // Verwijder lege velden
-        Object.keys(body.data).forEach(k => { if (!body.data[k]) delete body.data[k]; });
+        Object.keys(body.data).forEach(function(k) { if (!body.data[k]) delete body.data[k]; });
       }
-
-      // Log generatie naar admin dashboard
-      fetch('/api/log-generatie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: sessionStorage.getItem('pandai_code') || 'onbekend' }) }).catch(() => {});
-
-      const resp = await fetch('/api/genereer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      const json = await resp.json();
+      fetch('/api/log-generatie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: pandaiCode || 'onbekend' }) }).catch(function() {});
+      var resp = await fetch('/api/genereer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      var json = await resp.json();
       if (!resp.ok) throw new Error(json.error || 'API fout');
-
       activeerStap(4);
-      const tekst = json.resultaat;
-
+      var tekst = json.resultaat;
       document.getElementById('titel-inhoud').textContent = parseSectie(tekst, 'TITEL');
       document.getElementById('kort-inhoud').textContent = parseSectie(tekst, 'KORT');
       document.getElementById('volledig-inhoud').textContent = parseSectie(tekst, 'VOLLEDIG');
       document.getElementById('social-inhoud').textContent = parseSectie(tekst, 'SOCIAL');
-
       document.getElementById('loading-state').style.display = 'none';
       document.getElementById('tekst-output').style.display = 'flex';
       document.getElementById('score-rij').style.display = 'flex';
       document.getElementById('kopieer-alles').style.display = 'flex';
       document.getElementById('opnieuw-btn').style.display = 'flex';
-
-    } catch (err) {
+    } catch(err) {
       document.getElementById('loading-state').style.display = 'none';
       document.getElementById('leeg-state').style.display = 'flex';
-      const fout = document.getElementById('fout-melding');
+      var fout = document.getElementById('fout-melding');
       fout.style.display = 'block';
-      fout.textContent = 'Fout: ' + (err.message || 'Er ging iets mis. Controleer je verbinding en probeer opnieuw.');
+      fout.textContent = 'Fout: ' + (err.message || 'Er ging iets mis.');
     }
-
     btn.disabled = false;
     document.getElementById('spinner').style.display = 'none';
-    document.getElementById('btn-tekst').textContent = 'Genereer verkoopteksten';
+    document.getElementById('btn-tekst').textContent = '✨ Genereer verkoopteksten';
   }
 
   function parseSectie(tekst, label) {
-    const match = tekst.match(new RegExp(label + ':[\\s]*([\\s\\S]*?)(?=\\n[A-Z]+:|$)', 'i'));
+    var match = tekst.match(new RegExp(label + ':[\\s]*([\\s\\S]*?)(?=\\n[A-Z]+:|$)', 'i'));
     return match ? match[1].trim() : '';
   }
 
   function kopieer(id, btn) {
-    navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
-      const orig = btn.textContent; btn.textContent = 'Gekopieerd!'; btn.style.color = '#4CAF50';
-      setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+    navigator.clipboard.writeText(document.getElementById(id).textContent).then(function() {
+      var orig = btn.textContent; btn.textContent = 'Gekopieerd!'; btn.style.color = '#4CAF50';
+      setTimeout(function() { btn.textContent = orig; btn.style.color = ''; }, 2000);
     });
   }
 
   function allesKopieren() {
-    const alles = ['titel','kort','volledig','social'].map(id => {
-      const labels = { titel: 'TITEL', kort: 'KORTE OMSCHRIJVING', volledig: 'VOLLEDIGE VERKOOPTEKST', social: 'SOCIAL MEDIA' };
+    var alles = ['titel','kort','volledig','social'].map(function(id) {
+      var labels = { titel: 'TITEL', kort: 'KORTE OMSCHRIJVING', volledig: 'VOLLEDIGE VERKOOPTEKST', social: 'SOCIAL MEDIA' };
       return labels[id] + ':\n' + document.getElementById(id + '-inhoud').textContent;
     }).join('\n\n');
     navigator.clipboard.writeText(alles);
