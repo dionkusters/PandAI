@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const Anthropic = require('@anthropic-ai/sdk');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -57,20 +58,39 @@ async function slaCodesOpInRailway(codes) {
         }
       }
     };
-    const resp = await fetch('https://backboard.railway.app/graphql/v2', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RAILWAY_TOKEN}`
-      },
-      body: JSON.stringify({ query, variables })
+    await new Promise((resolve, reject) => {
+      const postData = JSON.stringify({ query, variables });
+      const options = {
+        hostname: 'backboard.railway.app',
+        path: '/graphql/v2',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + RAILWAY_TOKEN,
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      };
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            if (json.errors) {
+              console.error('Railway API fout:', JSON.stringify(json.errors));
+            } else {
+              console.log('PANDAI_CODES automatisch opgeslagen in Railway');
+            }
+          } catch(e) {
+            console.error('Railway parse fout:', e.message);
+          }
+          resolve();
+        });
+      });
+      req.on('error', (e) => { console.error('Railway verbindingsfout:', e.message); resolve(); });
+      req.write(postData);
+      req.end();
     });
-    const json = await resp.json();
-    if (json.errors) {
-      console.error('Railway API fout:', JSON.stringify(json.errors));
-    } else {
-      console.log('✅ PANDAI_CODES automatisch opgeslagen in Railway');
-    }
   } catch (e) {
     console.error('Railway sync mislukt:', e.message);
   }
