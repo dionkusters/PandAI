@@ -103,10 +103,14 @@
     <div class="nieuwe-code" style="margin-bottom:20px">
       <input type="text" id="nieuwe-naam" placeholder="Naam makelaar (bijv. Jan de Vries)" />
       <input type="text" id="nieuwe-code" placeholder="Code (bijv. JANDEVRIES)" style="text-transform:uppercase" />
+      <select id="nieuwe-type" style="background:#1E1E1E;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;font-size:13px;font-family:'DM Sans',sans-serif;color:#F5F5F0;outline:none;cursor:pointer;">
+        <option value="starter">Starter</option>
+        <option value="pro">Pro</option>
+      </select>
       <button class="btn" onclick="maakCode()">+ Aanmaken</button>
     </div>
     <table>
-      <thead><tr><th>Code</th><th>Naam</th><th>Status</th><th>Gebruik</th><th>Laatste gebruik</th><th>Acties</th></tr></thead>
+      <thead><tr><th>Code</th><th>Naam</th><th>Pakket</th><th>Status</th><th>Gebruik</th><th>Laatste gebruik</th><th>Acties</th></tr></thead>
       <tbody id="codes-tabel"></tbody>
     </table>
   </div>
@@ -170,6 +174,7 @@
       return '<tr>' +
         '<td><span class="code-badge">' + c.code + '</span></td>' +
         '<td>' + c.naam + '</td>' +
+        '<td><span style="font-size:11px;padding:2px 8px;border-radius:100px;' + (c.type === 'pro' ? 'background:rgba(242,106,27,0.15);color:#F26A1B;border:1px solid rgba(242,106,27,0.3)' : 'background:rgba(255,255,255,0.05);color:#888;border:1px solid #2a2a2a') + '">' + (c.type === 'pro' ? '⭐ Pro' : 'Starter') + '</span></td>' +
         '<td><span class="' + (c.actief ? 'status-actief' : 'status-inactief') + '">' + (c.actief ? 'Actief' : 'Inactief') + '</span></td>' +
         '<td>' + (c.gebruik || 0) + 'x</td>' +
         '<td style="color:#555;font-size:12px">' + datum + '</td>' +
@@ -202,12 +207,13 @@
   async function maakCode() {
     const naam = document.getElementById('nieuwe-naam').value.trim();
     const code = document.getElementById('nieuwe-code').value.trim().toUpperCase();
+    const type = document.getElementById('nieuwe-type').value;
     if (!naam || !code) return alert('Vul naam en code in');
 
     const resp = await fetch('/api/admin/codes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-wachtwoord': adminWW },
-      body: JSON.stringify({ naam, code })
+      body: JSON.stringify({ naam, code, type })
     });
     const json = await resp.json();
     if (json.fout) return alert(json.fout);
