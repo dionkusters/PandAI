@@ -8,7 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#0E0E0E; color:#F5F5F0; font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  body { background:#0E0E0E; color:#F5F5F0; font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; }
+  body::before { content:''; position:fixed; inset:0; background:url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&q=80') center/cover no-repeat; opacity:0.06; z-index:0; pointer-events:none; }
+  .card { position:relative; z-index:1; }
   .container { width:100%; max-width:420px; padding:24px; }
   .logo { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; text-align:center; margin-bottom:8px; }
   .logo span { color:#F26A1B; }
