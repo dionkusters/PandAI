@@ -61,6 +61,7 @@
       if (json.succes) {
         sessionStorage.setItem('pandai_code', code.toUpperCase());
         sessionStorage.setItem('pandai_naam', json.naam);
+        sessionStorage.setItem('pandai_type', json.type || 'starter');
         window.location.href = '/tool';
       } else {
         const fout = document.getElementById('fout-melding');
