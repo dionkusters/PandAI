@@ -15,7 +15,9 @@
     --wit: #F5F5F0; --grijs: #666; --grijs2: #999;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--wit); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  body { background: var(--bg); color: var(--wit); font-family: 'DM Sans', sans-serif; min-height: 100vh; position: relative; }
+  body::before { content: ''; position: fixed; inset: 0; background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&q=80') center/cover no-repeat; opacity: 0.04; z-index: 0; pointer-events: none; }
+  nav, .layout { position: relative; z-index: 1; }
 
   nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 48px; border-bottom: 1px solid #1a1a1a; position: sticky; top: 0; background: rgba(14,14,14,0.96); backdrop-filter: blur(16px); z-index: 100; }
   .logo { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
@@ -861,7 +863,7 @@
   async function vertaalNaarEngels(btn) {
     var volledig = document.getElementById('volledig-inhoud').textContent.trim();
     var titel = document.getElementById('titel-inhoud').textContent.trim();
-    if (!volledig) return;
+    if (!volledig) { alert('Genereer eerst een tekst voor je kunt vertalen.'); return; }
     var origTekst = btn.textContent;
     btn.textContent = '⏳ Bezig...';
     btn.disabled = true;
@@ -869,16 +871,26 @@
       var resp = await fetch('/api/genereer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toon: 'Professioneel en betrouwbaar', tekst: 'Vertaal de volgende Nederlandse vastgoedtekst naar professioneel Engels. Behoud dezelfde structuur. Geef terug als:\nTITEL: [engelse titel]\nVOLLEDIG:\n[engelse tekst]\n\nTekst:\nTITEL: ' + titel + '\n\nVOLLEDIG:\n' + volledig })
+        body: JSON.stringify({ 
+          toon: 'Professional and trustworthy',
+          data: {
+            'Instructie': 'Vertaal onderstaande Nederlandse vastgoedtekst naar professioneel Engels. Behoud exact dezelfde structuur met TITEL en VOLLEDIG.',
+            'Titel': titel,
+            'Volledige tekst': volledig
+          }
+        })
       });
       var json = await resp.json();
       if (!resp.ok) throw new Error(json.error);
       var engelsVolledig = parseSectie(json.resultaat, 'VOLLEDIG') || json.resultaat;
       var engelsTitel = parseSectie(json.resultaat, 'TITEL') || titel;
       toonVertaling(engelsTitel, engelsVolledig);
-    } catch(e) { alert('Vertaling mislukt: ' + e.message); }
-    btn.textContent = origTekst;
-    btn.disabled = false;
+    } catch(e) { 
+      alert('Vertaling mislukt: ' + (e.message || 'Onbekende fout. Controleer of je verbinding actief is.')); 
+    } finally {
+      btn.textContent = origTekst;
+      btn.disabled = false;
+    }
   }
 
   function toonVertaling(titel, tekst) {
