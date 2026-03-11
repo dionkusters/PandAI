@@ -55,22 +55,36 @@ function bouwPrompt(toon, documentTekst) {
 ${documentTekst ? '\nDOCUMENT INHOUD:\n' + documentTekst + '\n' : ''}
 Schrijfstijl: ${toon}
 
-Genereer met EXACT deze structuur:
+Genereer een professionele Funda verkooptekst met EXACT deze structuur:
 
 TITEL:
-[Pakkende titel maximaal 12 woorden]
+[Pakkende titel van 7-12 woorden die het unieke kenmerk benadrukt]
 
 KORT:
-[Funda intro 2-3 zinnen, max 60 woorden]
+[Precies 56 woorden - dit is de Funda intro die direct zichtbaar is. Begin met het sterkste kenmerk, eindig met een nieuwsgierigheidsprikkel]
 
 VOLLEDIG:
-[Verkooptekst 150-200 woorden, geen bulletpoints, eindig met uitnodiging tot bezichtiging]
+[350-500 woorden totaal. Opbouw:
+- Alinea 1 (60-80 woorden): Sfeer en gevoel, waarom is deze woning bijzonder?
+- Alinea 2 (60-80 woorden): Begane grond rondleiding
+- Alinea 3 (60-80 woorden): Verdieping(en) en slaapkamers
+- Alinea 4 (40-60 woorden): Tuin, garage, buitenruimte
+- Alinea 5 (40-60 woorden): Locatie en omgeving
+- Bullet lijst: 5-7 belangrijkste kenmerken (oneven aantal werkt beter)
+- Afsluitende zin met uitnodiging tot bezichtiging]
 
 SOCIAL:
-[Social media caption max 80 woorden met 4-5 hashtags]
+[Max 80 woorden, eigen creatieve invalshoek, 4-5 relevante hashtags]
 
-Schrijf in correct Nederlands.`;
-}
+Schrijfstijl: ${toon}
+
+Belangrijke regels:
+- Varieer de opbouw en zinsstructuur elke keer anders
+- Begin NOOIT met "Deze woning" of "Dit pand"
+- Vermijd clichés zoals "sfeervolle woning", "kindvriendelijke wijk", "instapklaar"
+- Schrijf vanuit het perspectief van de koper (jij/je), niet de verkoper
+- Gebruik concrete details en feiten, geen vage superlatieven
+- Schrijf in correct Nederlands
 
 function bouwHandmatigPrompt(data, toon) {
   return `Je bent een expert vastgoedcopywriter in Nederland.
