@@ -6,18 +6,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_WACHTWOORD = process.env.ADMIN_WACHTWOORD || 'pandai-admin-2024';
 
+const RAILWAY_TOKEN = process.env.RAILWAY_TOKEN;
+const RAILWAY_SERVICE_ID = '226f7000-2c8e-4af4-9067-df0a6c0f3357';
+const RAILWAY_ENVIRONMENT_ID = 'b4f44701-62ca-4cfa-8d1e-f4b85e972d0c';
+
 app.use(express.json({ limit: '10mb' }));
 
-// ─── DATA OPSLAG VIA ENVIRONMENT VARIABLES ────────────────────────────────────
-// Codes leven in PANDAI_CODES (Railway variable) — nooit kwijt bij deploy
-// Logs leven in geheugen — verdwijnen bij deploy maar codes blijven altijd
+// ─── DATA ─────────────────────────────────────────────────────────────────────
 
 let codesInMemory = null;
 let logsInMemory = [];
 
 function laadCodes() {
   if (codesInMemory) return codesInMemory;
-
   if (process.env.PANDAI_CODES) {
     try {
       codesInMemory = JSON.parse(process.env.PANDAI_CODES);
@@ -27,7 +28,6 @@ function laadCodes() {
       console.error('Fout bij parsen PANDAI_CODES:', e.message);
     }
   }
-
   console.log('PANDAI_CODES niet ingesteld, gebruik demo code');
   codesInMemory = [
     { code: 'DEMO2024', naam: 'Demo Account', actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 }
@@ -35,33 +35,68 @@ function laadCodes() {
   return codesInMemory;
 }
 
-function printCodesVoorRailway() {
-  console.log('--- KOPIEER DIT NAAR RAILWAY PANDAI_CODES ---');
-  console.log(JSON.stringify(codesInMemory));
-  console.log('---------------------------------------------');
+// Sla codes automatisch op naar Railway variable
+async function slaCodesOpInRailway(codes) {
+  if (!RAILWAY_TOKEN) {
+    console.log('Geen RAILWAY_TOKEN, codes alleen in geheugen');
+    return;
+  }
+  try {
+    const query = `
+      mutation upsertVariables($input: VariableCollectionUpsertInput!) {
+        variableCollectionUpsert(input: $input)
+      }
+    `;
+    const variables = {
+      input: {
+        projectId: '19cc3dad-2c5c-4d3c-b64c-e062a58d41ba',
+        serviceId: RAILWAY_SERVICE_ID,
+        environmentId: RAILWAY_ENVIRONMENT_ID,
+        variables: {
+          PANDAI_CODES: JSON.stringify(codes)
+        }
+      }
+    };
+    const resp = await fetch('https://backboard.railway.app/graphql/v2', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RAILWAY_TOKEN}`
+      },
+      body: JSON.stringify({ query, variables })
+    });
+    const json = await resp.json();
+    if (json.errors) {
+      console.error('Railway API fout:', JSON.stringify(json.errors));
+    } else {
+      console.log('✅ PANDAI_CODES automatisch opgeslagen in Railway');
+    }
+  } catch (e) {
+    console.error('Railway sync mislukt:', e.message);
+  }
 }
 
-function voegCodeToe(nieuwCode) {
+async function voegCodeToe(nieuwCode) {
   const codes = laadCodes();
   codes.push(nieuwCode);
   codesInMemory = codes;
-  printCodesVoorRailway();
+  await slaCodesOpInRailway(codes);
   return codes;
 }
 
-function wijzigCode(codeNaam, wijzigingen) {
+async function wijzigCode(codeNaam, wijzigingen) {
   const codes = laadCodes();
   const gevonden = codes.find(c => c.code === codeNaam);
   if (gevonden) Object.assign(gevonden, wijzigingen);
   codesInMemory = codes;
-  printCodesVoorRailway();
+  await slaCodesOpInRailway(codes);
   return gevonden;
 }
 
-function verwijderCode(codeNaam) {
+async function verwijderCode(codeNaam) {
   const codes = laadCodes();
   codesInMemory = codes.filter(c => c.code !== codeNaam);
-  printCodesVoorRailway();
+  await slaCodesOpInRailway(codesInMemory);
   return codesInMemory;
 }
 
@@ -138,7 +173,7 @@ app.get('/api/admin/logs', (req, res) => {
   res.json(logsInMemory.slice(0, 100));
 });
 
-app.post('/api/admin/codes', (req, res) => {
+app.post('/api/admin/codes', async (req, res) => {
   if (!checkAdmin(req, res)) return;
   const { naam, code } = req.body;
   if (!naam || !code) return res.status(400).json({ fout: 'Naam en code zijn verplicht' });
@@ -148,29 +183,23 @@ app.post('/api/admin/codes', (req, res) => {
     return res.status(400).json({ fout: 'Code bestaat al' });
   }
 
-  voegCodeToe({ code: code.toUpperCase(), naam, actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 });
+  await voegCodeToe({ code: code.toUpperCase(), naam, actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 });
   res.json({ ok: true });
 });
 
-app.patch('/api/admin/codes/:code', (req, res) => {
+app.patch('/api/admin/codes/:code', async (req, res) => {
   if (!checkAdmin(req, res)) return;
   const codes = laadCodes();
   const huidig = codes.find(c => c.code === req.params.code);
   if (!huidig) return res.status(404).json({ fout: 'Code niet gevonden' });
-  const gevonden = wijzigCode(req.params.code, { actief: !huidig.actief });
+  const gevonden = await wijzigCode(req.params.code, { actief: !huidig.actief });
   res.json({ ok: true, actief: gevonden.actief });
 });
 
-app.delete('/api/admin/codes/:code', (req, res) => {
+app.delete('/api/admin/codes/:code', async (req, res) => {
   if (!checkAdmin(req, res)) return;
-  verwijderCode(req.params.code);
+  await verwijderCode(req.params.code);
   res.json({ ok: true });
-});
-
-// Export huidige codes als JSON string voor Railway
-app.get('/api/admin/export-codes', (req, res) => {
-  if (!checkAdmin(req, res)) return;
-  res.json({ pandai_codes: JSON.stringify(laadCodes()) });
 });
 
 // ─── AI GENERATIE ──────────────────────────────────────────────────────────────
@@ -219,6 +248,8 @@ app.post('/api/genereer', async (req, res) => {
     res.status(500).json({ error: err.message || 'Er ging iets mis' });
   }
 });
+
+// ─── PROMPTS ──────────────────────────────────────────────────────────────────
 
 const PROMPT_STRUCTUUR = `
 Genereer een professionele Funda verkooptekst met EXACT deze structuur:
