@@ -171,7 +171,10 @@
 
 <nav>
   <div class="logo">Pand<span>AI</span></div>
-  <div class="nav-tag">Verkoopteksten Generator</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="nav-tag" id="nav-gebruiker">Verkoopteksten Generator</div>
+    <button onclick="uitloggen()" style="background:none;border:1px solid #2a2a2a;color:#666;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;transition:all 0.2s" onmouseover="this.style.color='#fff';this.style.borderColor='#444'" onmouseout="this.style.color='#666';this.style.borderColor='#2a2a2a'">Uitloggen</button>
+  </div>
 </nav>
 
 <div class="app">
@@ -588,6 +591,19 @@
 </div>
 
 <script>
+  // Auth check
+  const pandaiCode = sessionStorage.getItem("pandai_code");
+  const pandaiNaam = sessionStorage.getItem("pandai_naam");
+  if (!pandaiCode) { window.location.href = "/"; }
+  else {
+    const navEl = document.getElementById("nav-gebruiker");
+    if (navEl) navEl.textContent = pandaiNaam || pandaiCode; + (pandaiNaam || pandaiCode);
+  }
+  function uitloggen() {
+    sessionStorage.removeItem("pandai_code");
+    sessionStorage.removeItem("pandai_naam");
+    window.location.href = "/";
+  }
   let geselecteerdeToon = 'Professioneel en betrouwbaar';
   let huidigBestand = null;
   let uitgelezenTekst = '';
@@ -917,6 +933,9 @@
         // Verwijder lege velden
         Object.keys(body.data).forEach(k => { if (!body.data[k]) delete body.data[k]; });
       }
+
+      // Log generatie naar admin dashboard
+      fetch('/api/log-generatie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: sessionStorage.getItem('pandai_code') || 'onbekend' }) }).catch(() => {});
 
       const resp = await fetch('/api/genereer', {
         method: 'POST',
