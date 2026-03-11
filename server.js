@@ -228,7 +228,11 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 app.post('/api/genereer', async (req, res) => {
   try {
-    const { toon, fileBase64, fileMediaType, tekst, data, schrijfstijl } = req.body;
+    const { toon, fileBase64, fileMediaType, tekst, data, schrijfstijl, code } = req.body;
+    const codes = laadCodes();
+    const gebruiker = codes.find(c => c.code === (code || '').toUpperCase());
+    const isPro = gebruiker && gebruiker.type === 'pro';
+    const maxTokens = isPro ? 3000 : 2000;
     let messages = [];
 
     const stijlInstructie = schrijfstijl && schrijfstijl.length > 0
@@ -255,7 +259,7 @@ app.post('/api/genereer', async (req, res) => {
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
+      max_tokens: maxTokens,
       messages
     });
 
