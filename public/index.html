@@ -1120,24 +1120,67 @@
     var kort = document.getElementById('kort-inhoud').textContent.trim();
     var volledig = document.getElementById('volledig-inhoud').textContent.trim();
     var social = document.getElementById('social-inhoud').textContent.trim();
+    var naam = sessionStorage.getItem('pandai_naam') || '';
     if (!titel) { alert('Genereer eerst een tekst.'); return; }
 
+    var datum = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+
     var win = window.open('', '_blank');
-    win.document.write('<html><head><meta charset="UTF-8"><title>' + titel + '</title><style>');
-    win.document.write('body{font-family:Georgia,serif;max-width:700px;margin:40px auto;padding:0 24px;color:#222;line-height:1.7}');
-    win.document.write('h1{font-size:22px;margin-bottom:8px;color:#111}');
-    win.document.write('.label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin:24px 0 6px}');
-    win.document.write('.sectie{font-size:15px;white-space:pre-wrap}');
-    win.document.write('.footer{margin-top:40px;font-size:11px;color:#bbb;border-top:1px solid #eee;padding-top:12px}');
+    win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + titel + '</title>');
+    win.document.write('<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">');
+    win.document.write('<style>');
+    win.document.write('*{margin:0;padding:0;box-sizing:border-box}');
+    win.document.write('body{background:#fff;color:#1a1a1a;font-family:"DM Sans",sans-serif;font-size:14px;line-height:1.75}');
+    win.document.write('@media print{body{margin:0}}');
+    // Header balk
+    win.document.write('.header{background:#0E0E0E;padding:20px 40px;display:flex;align-items:center;justify-content:space-between}');
+    win.document.write('.logo{font-family:"Syne",sans-serif;font-size:22px;font-weight:800;color:#fff}');
+    win.document.write('.logo span{color:#F26A1B}');
+    win.document.write('.header-meta{font-size:11px;color:#666;text-align:right}');
+    // Content
+    win.document.write('.content{padding:40px}');
+    win.document.write('.pand-titel{font-family:"Syne",sans-serif;font-size:26px;font-weight:800;color:#0E0E0E;margin-bottom:6px;line-height:1.3}');
+    win.document.write('.gegenereerd-door{font-size:12px;color:#999;margin-bottom:32px}');
+    // Secties
+    win.document.write('.sectie-blok{margin-bottom:28px}');
+    win.document.write('.sectie-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;color:#F26A1B;margin-bottom:8px;font-family:"Syne",sans-serif}');
+    win.document.write('.sectie-lijn{height:2px;background:linear-gradient(90deg,#F26A1B,transparent);margin-bottom:12px;border-radius:1px}');
+    win.document.write('.sectie-tekst{color:#2a2a2a;white-space:pre-wrap;font-size:14px}');
+    win.document.write('.kort-box{background:#fafafa;border-left:3px solid #F26A1B;padding:16px 20px;border-radius:0 8px 8px 0;font-size:14px;color:#333;line-height:1.7}');
+    win.document.write('.social-box{background:#f5f5f5;border-radius:8px;padding:16px 20px;font-size:13px;color:#444;line-height:1.7}');
+    // Footer
+    win.document.write('.footer{margin-top:40px;padding:16px 40px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center}');
+    win.document.write('.footer-logo{font-family:"Syne",sans-serif;font-size:13px;font-weight:800;color:#ccc}');
+    win.document.write('.footer-logo span{color:#F26A1B}');
+    win.document.write('.footer-url{font-size:11px;color:#bbb}');
     win.document.write('</style></head><body>');
-    win.document.write('<h1>' + titel + '</h1>');
-    win.document.write('<div class="label">KORTE OMSCHRIJVING</div><div class="sectie">' + kort + '</div>');
-    win.document.write('<div class="label">VOLLEDIGE TEKST</div><div class="sectie">' + volledig + '</div>');
-    win.document.write('<div class="label">SOCIAL MEDIA</div><div class="sectie">' + social + '</div>');
-    win.document.write('<div class="footer">Gegenereerd met PandAI &mdash; www.getpandai.nl</div>');
+
+    // Header
+    win.document.write('<div class="header">');
+    win.document.write('<div class="logo">Pand<span>AI</span></div>');
+    win.document.write('<div class="header-meta">' + naam + '<br>' + datum + '</div>');
+    win.document.write('</div>');
+
+    // Content
+    win.document.write('<div class="content">');
+    win.document.write('<div class="pand-titel">' + titel + '</div>');
+    win.document.write('<div class="gegenereerd-door">Gegenereerd met PandAI</div>');
+
+    win.document.write('<div class="sectie-blok"><div class="sectie-label">Korte omschrijving</div><div class="sectie-lijn"></div><div class="kort-box">' + kort + '</div></div>');
+    win.document.write('<div class="sectie-blok"><div class="sectie-label">Volledige tekst</div><div class="sectie-lijn"></div><div class="sectie-tekst">' + volledig + '</div></div>');
+    win.document.write('<div class="sectie-blok"><div class="sectie-label">Social media</div><div class="sectie-lijn"></div><div class="social-box">' + social + '</div></div>');
+
+    win.document.write('</div>');
+
+    // Footer
+    win.document.write('<div class="footer">');
+    win.document.write('<div class="footer-logo">Pand<span>AI</span></div>');
+    win.document.write('<div class="footer-url">www.getpandai.nl</div>');
+    win.document.write('</div>');
+
     win.document.write('</body></html>');
     win.document.close();
-    setTimeout(function() { win.print(); }, 400);
+    setTimeout(function() { win.print(); }, 600);
   }
 </script>
 </body>
