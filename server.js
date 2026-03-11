@@ -12,8 +12,13 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 app.post('/api/genereer', async (req, res) => {
   try {
-    const { toon, fileBase64, fileMediaType, tekst, data } = req.body;
+    const { toon, fileBase64, fileMediaType, tekst, data, schrijfstijl } = req.body;
     let messages = [];
+
+    const stijlInstructie = schrijfstijl && schrijfstijl.length > 0
+      ? '\n\nSCHRIJFSTIJL VAN DEZE MAKELAAR (analyseer en kopieer exact deze stijl — woordkeuze, zinslengte, opbouw, toon):\n' +
+        schrijfstijl.map((t, i) => 'Voorbeeld ' + (i+1) + ':\n' + t).join('\n\n')
+      : '';
 
     if (fileBase64 && fileMediaType) {
       const isPDF = fileMediaType === 'application/pdf';
@@ -23,13 +28,13 @@ app.post('/api/genereer', async (req, res) => {
           isPDF
             ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: fileBase64 } }
             : { type: 'image', source: { type: 'base64', media_type: fileMediaType, data: fileBase64 } },
-          { type: 'text', text: bouwPrompt(toon, '') }
+          { type: 'text', text: bouwPrompt(toon, '', stijlInstructie) }
         ]
       }];
     } else if (tekst) {
-      messages = [{ role: 'user', content: bouwPrompt(toon, tekst) }];
+      messages = [{ role: 'user', content: bouwPrompt(toon, tekst, stijlInstructie) }];
     } else {
-      messages = [{ role: 'user', content: bouwHandmatigPrompt(data, toon) }];
+      messages = [{ role: 'user', content: bouwHandmatigPrompt(data, toon, stijlInstructie) }];
     }
 
     const response = await client.messages.create({
@@ -65,18 +70,20 @@ SOCIAL:
 
 Regels: varieer de opbouw elke keer anders. Begin nooit met Deze woning of Dit pand. Vermijd cliches zoals sfeervolle woning, kindvriendelijke wijk of instapklaar. Schrijf vanuit perspectief van de koper. Gebruik concrete feiten. Schrijf in correct Nederlands.`;
 
-function bouwPrompt(toon, documentTekst) {
+function bouwPrompt(toon, documentTekst, stijlInstructie) {
   return 'Je bent een expert vastgoedcopywriter in Nederland. Analyseer het bijgevoegde inventarisatiedocument en extraheer alle pandgegevens.\n' +
     (documentTekst ? '\nDOCUMENT INHOUD:\n' + documentTekst + '\n' : '') +
     '\nSchrijfstijl: ' + toon +
+    (stijlInstructie || '') +
     PROMPT_STRUCTUUR;
 }
 
-function bouwHandmatigPrompt(data, toon) {
+function bouwHandmatigPrompt(data, toon, stijlInstructie) {
   const pandInfo = Object.entries(data).map(([k, v]) => '- ' + k + ': ' + v).join('\n');
   return 'Je bent een expert vastgoedcopywriter in Nederland.\n\nPANDGEGEVENS:\n' +
     pandInfo +
     '\n\nSchrijfstijl: ' + toon +
+    (stijlInstructie || '') +
     PROMPT_STRUCTUUR;
 }
 
