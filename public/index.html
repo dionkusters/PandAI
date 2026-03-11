@@ -480,6 +480,7 @@
       <div class="resultaat-acties">
         <button class="actie-btn" onclick="allesKopieren()" id="kopieer-alles" style="display:none">📋 Alles kopiëren</button>
         <button class="actie-btn" onclick="exporteerPDF()" id="pdf-export-btn" style="display:none">📄 PDF exporteren</button>
+        <button class="actie-btn" onclick="genereerSocial()" id="social-btn" style="display:none">📱 Social media</button>
         <button class="actie-btn" onclick="genereerTekst()" id="opnieuw-btn" style="display:none">↺ Opnieuw</button>
       </div>
     </div>
@@ -751,6 +752,7 @@
     document.getElementById('score-rij').style.display = 'flex';
     document.getElementById('kopieer-alles').style.display = 'flex';
     if (pandaiType === 'pro') document.getElementById('pdf-export-btn').style.display = 'flex';
+    if (pandaiType === 'pro') document.getElementById('social-btn').style.display = 'flex';
     document.getElementById('opnieuw-btn').style.display = 'flex';
     document.querySelector('.paneel-rechts').scrollIntoView({ behavior: 'smooth' });
   }
@@ -1020,6 +1022,7 @@
     document.getElementById('tekst-output').style.display = 'none';
     document.getElementById('score-rij').style.display = 'none';
     document.getElementById('kopieer-alles').style.display = 'none';
+    document.getElementById('social-btn').style.display = 'none';
     document.getElementById('opnieuw-btn').style.display = 'none';
     activeerStap(1);
     setTimeout(function() { activeerStap(2); }, 800);
@@ -1081,6 +1084,8 @@
       document.getElementById('score-rij').style.display = 'flex';
       document.getElementById('kopieer-alles').style.display = 'flex';
       if (pandaiType === 'pro') document.getElementById('pdf-export-btn').style.display = 'flex';
+      if (pandaiType === 'pro') document.getElementById('social-btn').style.display = 'flex';
+    if (pandaiType === 'pro') document.getElementById('social-btn').style.display = 'flex';
       document.getElementById('opnieuw-btn').style.display = 'flex';
     } catch(err) {
       document.getElementById('loading-state').style.display = 'none';
@@ -1182,6 +1187,108 @@
     win.document.close();
     setTimeout(function() { win.print(); }, 600);
   }
+
+  // ===== SOCIAL MEDIA PAKKET (PRO) =====
+  async function genereerSocial() {
+    var btn = document.getElementById('social-btn');
+    var origTekst = btn.textContent;
+    btn.textContent = '⏳ Bezig...';
+    btn.disabled = true;
+
+    var titel = document.getElementById('titel-inhoud').textContent.trim();
+    var kort = document.getElementById('kort-inhoud').textContent.trim();
+    var volledig = document.getElementById('volledig-inhoud').textContent.trim();
+
+    try {
+      var resp = await fetch('/api/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titel, kort, volledig, toon: geselecteerdeToon, code: pandaiCode || '' })
+      });
+      var json = await resp.json();
+      if (!resp.ok) throw new Error(json.error);
+      toonSocialPopup(json.resultaat);
+    } catch(e) {
+      alert('Social media pakket mislukt: ' + (e.message || 'Onbekende fout'));
+    } finally {
+      btn.textContent = origTekst;
+      btn.disabled = false;
+    }
+  }
+
+  function parseSocialSectie(tekst, naam) {
+    var re = new RegExp(naam + ':\s*([\s\S]*?)(?=\n(?:LINKEDIN|FACEBOOK|FUNDA):|$)', 'i');
+    var match = tekst.match(re);
+    return match ? match[1].trim() : '';
+  }
+
+  function toonSocialPopup(resultaat) {
+    var linkedin = parseSocialSectie(resultaat, 'LINKEDIN');
+    var facebook = parseSocialSectie(resultaat, 'FACEBOOK');
+    var funda = parseSocialSectie(resultaat, 'FUNDA');
+
+    var popup = document.createElement('div');
+    popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+
+    var platforms = [
+      { id: 'linkedin', naam: 'LinkedIn', kleur: '#0A66C2', emoji: '💼', tekst: linkedin },
+      { id: 'facebook', naam: 'Facebook', kleur: '#1877F2', emoji: '📘', tekst: facebook },
+      { id: 'funda',    naam: 'Funda',    kleur: '#F26A1B', emoji: '🏡', tekst: funda }
+    ];
+
+    var html = '<div style="background:#161616;border:1px solid #2a2a2a;border-radius:16px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;">';
+    // Header
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #1f1f1f;">';
+    html += '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;">📱 Social Media Pakket</div>';
+    html += '<button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:1px solid #2a2a2a;color:#666;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:DM Sans,sans-serif;font-size:12px;">✕ Sluiten</button>';
+    html += '</div>';
+    // Tabs
+    html += '<div style="display:flex;gap:0;border-bottom:1px solid #1f1f1f;" id="social-tabs">';
+    platforms.forEach(function(p, i) {
+      html += '<button onclick="wisselTab('' + p.id + '')" id="tab-' + p.id + '" style="flex:1;padding:12px;background:' + (i===0?'#1e1e1e':'none') + ';border:none;border-bottom:2px solid ' + (i===0?p.kleur:'transparent') + ';color:' + (i===0?'#fff':'#666') + ';font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;">' + p.emoji + ' ' + p.naam + '</button>';
+    });
+    html += '</div>';
+    // Content panels
+    platforms.forEach(function(p, i) {
+      html += '<div id="panel-' + p.id + '" style="display:' + (i===0?'block':'none') + ';padding:20px 24px;">';
+      html += '<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:16px;margin-bottom:12px;">';
+      html += '<div style="font-size:13px;line-height:1.75;color:#e0e0e0;white-space:pre-wrap;" id="tekst-' + p.id + '">' + p.tekst + '</div>';
+      html += '</div>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+      html += '<span style="font-size:11px;color:#555;">' + (p.tekst ? p.tekst.length : 0) + ' tekens</span>';
+      html += '<button onclick="kopieerSocial('' + p.id + '', this)" style="background:' + p.kleur + ';color:white;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">📋 Kopieer</button>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+
+    popup.innerHTML = html;
+    document.body.appendChild(popup);
+    popup.addEventListener('click', function(e) { if (e.target === popup) popup.remove(); });
+  }
+
+  function wisselTab(id) {
+    var platforms = ['linkedin', 'facebook', 'funda'];
+    var kleuren = { linkedin: '#0A66C2', facebook: '#1877F2', funda: '#F26A1B' };
+    platforms.forEach(function(p) {
+      var tab = document.getElementById('tab-' + p);
+      var panel = document.getElementById('panel-' + p);
+      var actief = p === id;
+      panel.style.display = actief ? 'block' : 'none';
+      tab.style.background = actief ? '#1e1e1e' : 'none';
+      tab.style.borderBottomColor = actief ? kleuren[p] : 'transparent';
+      tab.style.color = actief ? '#fff' : '#666';
+    });
+  }
+
+  function kopieerSocial(id, btn) {
+    var tekst = document.getElementById('tekst-' + id).textContent;
+    navigator.clipboard.writeText(tekst).then(function() {
+      var orig = btn.textContent;
+      btn.textContent = '✓ Gekopieerd!';
+      setTimeout(function() { btn.textContent = orig; }, 2000);
+    });
+  }
+
 </script>
 </body>
 </html>
