@@ -152,7 +152,7 @@ app.post('/api/inloggen', (req, res) => {
   });
 
   if (logsInMemory.length > 500) logsInMemory = logsInMemory.slice(0, 500);
-  res.json({ succes: true, naam: gevonden.naam });
+  res.json({ succes: true, naam: gevonden.naam, type: gevonden.type || 'starter' });
 });
 
 app.post('/api/log-generatie', (req, res) => {
@@ -195,7 +195,7 @@ app.get('/api/admin/logs', (req, res) => {
 
 app.post('/api/admin/codes', async (req, res) => {
   if (!checkAdmin(req, res)) return;
-  const { naam, code } = req.body;
+  const { naam, code, type } = req.body;
   if (!naam || !code) return res.status(400).json({ fout: 'Naam en code zijn verplicht' });
 
   const codes = laadCodes();
@@ -203,7 +203,7 @@ app.post('/api/admin/codes', async (req, res) => {
     return res.status(400).json({ fout: 'Code bestaat al' });
   }
 
-  await voegCodeToe({ code: code.toUpperCase(), naam, actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 });
+  await voegCodeToe({ code: code.toUpperCase(), naam, type: type || 'starter', actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 });
   res.json({ ok: true });
 });
 
