@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const app = express();
@@ -9,44 +8,76 @@ const ADMIN_WACHTWOORD = process.env.ADMIN_WACHTWOORD || 'pandai-admin-2024';
 
 app.use(express.json({ limit: '10mb' }));
 
-const DATA_PAD = '/tmp/pandai_data.json';
+// ─── DATA OPSLAG VIA ENVIRONMENT VARIABLES ────────────────────────────────────
+// Codes leven in PANDAI_CODES (Railway variable) — nooit kwijt bij deploy
+// Logs leven in geheugen — verdwijnen bij deploy maar codes blijven altijd
 
-function laadData() {
-  try {
-    if (fs.existsSync(DATA_PAD)) {
-      return JSON.parse(fs.readFileSync(DATA_PAD, 'utf8'));
+let codesInMemory = null;
+let logsInMemory = [];
+
+function laadCodes() {
+  if (codesInMemory) return codesInMemory;
+
+  if (process.env.PANDAI_CODES) {
+    try {
+      codesInMemory = JSON.parse(process.env.PANDAI_CODES);
+      console.log('Codes geladen uit PANDAI_CODES:', codesInMemory.length, 'codes');
+      return codesInMemory;
+    } catch (e) {
+      console.error('Fout bij parsen PANDAI_CODES:', e.message);
     }
-  } catch (e) {}
-  return {
-    codes: [
-      { code: 'DEMO2024', naam: 'Demo Account', actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 }
-    ],
-    logs: []
-  };
+  }
+
+  console.log('PANDAI_CODES niet ingesteld, gebruik demo code');
+  codesInMemory = [
+    { code: 'DEMO2024', naam: 'Demo Account', actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 }
+  ];
+  return codesInMemory;
 }
 
-function slaDataOp(data) {
-  try { fs.writeFileSync(DATA_PAD, JSON.stringify(data, null, 2)); } catch (e) {}
+function printCodesVoorRailway() {
+  console.log('--- KOPIEER DIT NAAR RAILWAY PANDAI_CODES ---');
+  console.log(JSON.stringify(codesInMemory));
+  console.log('---------------------------------------------');
 }
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/login.html'));
-});
+function voegCodeToe(nieuwCode) {
+  const codes = laadCodes();
+  codes.push(nieuwCode);
+  codesInMemory = codes;
+  printCodesVoorRailway();
+  return codes;
+}
 
-app.get('/tool', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
-});
+function wijzigCode(codeNaam, wijzigingen) {
+  const codes = laadCodes();
+  const gevonden = codes.find(c => c.code === codeNaam);
+  if (gevonden) Object.assign(gevonden, wijzigingen);
+  codesInMemory = codes;
+  printCodesVoorRailway();
+  return gevonden;
+}
 
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/admin.html'));
-});
+function verwijderCode(codeNaam) {
+  const codes = laadCodes();
+  codesInMemory = codes.filter(c => c.code !== codeNaam);
+  printCodesVoorRailway();
+  return codesInMemory;
+}
 
+// ─── ROUTES ───────────────────────────────────────────────────────────────────
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/login.html')));
+app.get('/tool', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public/admin.html')));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ─── AUTH ──────────────────────────────────────────────────────────────────────
 
 app.post('/api/inloggen', (req, res) => {
   const { code } = req.body;
-  const data = laadData();
-  const gevonden = data.codes.find(c => c.code.toUpperCase() === (code || '').toUpperCase() && c.actief);
+  const codes = laadCodes();
+  const gevonden = codes.find(c => c.code.toUpperCase() === (code || '').toUpperCase() && c.actief);
 
   if (!gevonden) {
     return res.status(401).json({ succes: false, fout: 'Ongeldige of inactieve toegangscode.' });
@@ -56,80 +87,93 @@ app.post('/api/inloggen', (req, res) => {
   gevonden.gebruik = (gevonden.gebruik || 0) + 1;
   gevonden.laatste_gebruik = new Date().toISOString();
 
-  data.logs.unshift({
+  logsInMemory.unshift({
     id: Date.now(),
     code: gevonden.code,
     naam: gevonden.naam,
-    ip: ip,
+    ip,
     tijdstip: new Date().toISOString(),
     actie: 'ingelogd'
   });
 
-  if (data.logs.length > 500) data.logs = data.logs.slice(0, 500);
-  slaDataOp(data);
-
+  if (logsInMemory.length > 500) logsInMemory = logsInMemory.slice(0, 500);
   res.json({ succes: true, naam: gevonden.naam });
 });
 
 app.post('/api/log-generatie', (req, res) => {
   const { code } = req.body;
-  const data = laadData();
+  const codes = laadCodes();
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'onbekend';
 
-  data.logs.unshift({
+  logsInMemory.unshift({
     id: Date.now(),
     code: code || 'onbekend',
-    naam: (data.codes.find(c => c.code === code) || {}).naam || 'onbekend',
-    ip: ip,
+    naam: (codes.find(c => c.code === code) || {}).naam || 'onbekend',
+    ip,
     tijdstip: new Date().toISOString(),
     actie: 'tekst_gegenereerd'
   });
 
-  if (data.logs.length > 500) data.logs = data.logs.slice(0, 500);
-  slaDataOp(data);
+  if (logsInMemory.length > 500) logsInMemory = logsInMemory.slice(0, 500);
   res.json({ ok: true });
 });
 
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+
+function checkAdmin(req, res) {
+  if (req.headers['x-admin-wachtwoord'] !== ADMIN_WACHTWOORD) {
+    res.status(403).json({ fout: 'Geen toegang' });
+    return false;
+  }
+  return true;
+}
+
 app.get('/api/admin/codes', (req, res) => {
-  if (req.headers['x-admin-wachtwoord'] !== ADMIN_WACHTWOORD) return res.status(403).json({ fout: 'Geen toegang' });
-  res.json(laadData().codes);
+  if (!checkAdmin(req, res)) return;
+  res.json(laadCodes());
 });
 
 app.get('/api/admin/logs', (req, res) => {
-  if (req.headers['x-admin-wachtwoord'] !== ADMIN_WACHTWOORD) return res.status(403).json({ fout: 'Geen toegang' });
-  res.json(laadData().logs.slice(0, 100));
+  if (!checkAdmin(req, res)) return;
+  res.json(logsInMemory.slice(0, 100));
 });
 
 app.post('/api/admin/codes', (req, res) => {
-  if (req.headers['x-admin-wachtwoord'] !== ADMIN_WACHTWOORD) return res.status(403).json({ fout: 'Geen toegang' });
+  if (!checkAdmin(req, res)) return;
   const { naam, code } = req.body;
   if (!naam || !code) return res.status(400).json({ fout: 'Naam en code zijn verplicht' });
-  const data = laadData();
-  if (data.codes.find(c => c.code.toUpperCase() === code.toUpperCase())) {
+
+  const codes = laadCodes();
+  if (codes.find(c => c.code.toUpperCase() === code.toUpperCase())) {
     return res.status(400).json({ fout: 'Code bestaat al' });
   }
-  data.codes.push({ code: code.toUpperCase(), naam, actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 });
-  slaDataOp(data);
+
+  voegCodeToe({ code: code.toUpperCase(), naam, actief: true, aangemaakt: new Date().toISOString(), gebruik: 0 });
   res.json({ ok: true });
 });
 
 app.patch('/api/admin/codes/:code', (req, res) => {
-  if (req.headers['x-admin-wachtwoord'] !== ADMIN_WACHTWOORD) return res.status(403).json({ fout: 'Geen toegang' });
-  const data = laadData();
-  const gevonden = data.codes.find(c => c.code === req.params.code);
-  if (!gevonden) return res.status(404).json({ fout: 'Code niet gevonden' });
-  gevonden.actief = !gevonden.actief;
-  slaDataOp(data);
+  if (!checkAdmin(req, res)) return;
+  const codes = laadCodes();
+  const huidig = codes.find(c => c.code === req.params.code);
+  if (!huidig) return res.status(404).json({ fout: 'Code niet gevonden' });
+  const gevonden = wijzigCode(req.params.code, { actief: !huidig.actief });
   res.json({ ok: true, actief: gevonden.actief });
 });
 
 app.delete('/api/admin/codes/:code', (req, res) => {
-  if (req.headers['x-admin-wachtwoord'] !== ADMIN_WACHTWOORD) return res.status(403).json({ fout: 'Geen toegang' });
-  const data = laadData();
-  data.codes = data.codes.filter(c => c.code !== req.params.code);
-  slaDataOp(data);
+  if (!checkAdmin(req, res)) return;
+  verwijderCode(req.params.code);
   res.json({ ok: true });
 });
+
+// Export huidige codes als JSON string voor Railway
+app.get('/api/admin/export-codes', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  res.json({ pandai_codes: JSON.stringify(laadCodes()) });
+});
+
+// ─── AI GENERATIE ──────────────────────────────────────────────────────────────
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
