@@ -540,14 +540,19 @@
   // ===== AUTH =====
   const pandaiCode = sessionStorage.getItem('pandai_code');
   const pandaiNaam = sessionStorage.getItem('pandai_naam');
+  const pandaiType = sessionStorage.getItem('pandai_type') || 'starter';
   if (!pandaiCode) { window.location.href = '/'; }
   else {
     const navEl = document.getElementById('nav-gebruiker');
     if (navEl) navEl.textContent = pandaiNaam || pandaiCode;
+    // Vertaalknop alleen voor Pro
+    const vertaalBtn = document.getElementById('vertaal-btn');
+    if (vertaalBtn && pandaiType !== 'pro') vertaalBtn.style.display = 'none';
   }
   function uitloggen() {
     sessionStorage.removeItem('pandai_code');
     sessionStorage.removeItem('pandai_naam');
+    sessionStorage.removeItem('pandai_type');
     window.location.href = '/';
   }
 
