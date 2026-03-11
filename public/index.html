@@ -1227,7 +1227,12 @@
     var facebook = parseSocialSectie(resultaat, 'FACEBOOK');
     var funda = parseSocialSectie(resultaat, 'FUNDA');
 
+    // Remove existing popup if any
+    var bestaand = document.getElementById('social-popup');
+    if (bestaand) bestaand.remove();
+
     var popup = document.createElement('div');
+    popup.id = 'social-popup';
     popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
 
     var platforms = [
@@ -1236,37 +1241,76 @@
       { id: 'funda',    naam: 'Funda',    kleur: '#F26A1B', emoji: '🏡', tekst: funda }
     ];
 
-    var html = '<div style="background:#161616;border:1px solid #2a2a2a;border-radius:16px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;">';
-    // Header
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #1f1f1f;">';
-    html += '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;">📱 Social Media Pakket</div>';
-    html += '<button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:1px solid #2a2a2a;color:#666;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:DM Sans,sans-serif;font-size:12px;">✕ Sluiten</button>';
-    html += '</div>';
-    // Tabs
-    html += '<div style="display:flex;gap:0;border-bottom:1px solid #1f1f1f;" id="social-tabs">';
-    platforms.forEach(function(p, i) {
-      html += '<button onclick="wisselTab(\"' + p.id + '\")" id="tab-' + p.id + '" style="flex:1;padding:12px;background:' + (i===0?'#1e1e1e':'none') + ';border:none;border-bottom:2px solid ' + (i===0?p.kleur:'transparent') + ';color:' + (i===0?'#fff':'#666') + ';font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;">' + p.emoji + ' ' + p.naam + '</button>';
-    });
-    html += '</div>';
-    // Content panels
-    platforms.forEach(function(p, i) {
-      html += '<div id="panel-' + p.id + '" style="display:' + (i===0?'block':'none') + ';padding:20px 24px;">';
-      html += '<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:16px;margin-bottom:12px;">';
-      html += '<div style="font-size:13px;line-height:1.75;color:#e0e0e0;white-space:pre-wrap;" id="tekst-' + p.id + '">' + p.tekst + '</div>';
-      html += '</div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
-      html += '<span style="font-size:11px;color:#555;">' + (p.tekst ? p.tekst.length : 0) + ' tekens</span>';
-      html += '<button onclick="kopieerSocial(\"' + p.id + '\", this)" style="background:' + p.kleur + ';color:white;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">📋 Kopieer</button>';
-      html += '</div></div>';
-    });
-    html += '</div>';
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'background:#161616;border:1px solid #2a2a2a;border-radius:16px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;';
 
-    popup.innerHTML = html;
+    // Header
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #1f1f1f;';
+    header.innerHTML = '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;">📱 Social Media Pakket</div>';
+    var sluitBtn = document.createElement('button');
+    sluitBtn.textContent = '✕ Sluiten';
+    sluitBtn.style.cssText = 'background:none;border:1px solid #2a2a2a;color:#666;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:DM Sans,sans-serif;font-size:12px;';
+    sluitBtn.onclick = function() { popup.remove(); };
+    header.appendChild(sluitBtn);
+    wrapper.appendChild(header);
+
+    // Tabs
+    var tabsDiv = document.createElement('div');
+    tabsDiv.style.cssText = 'display:flex;border-bottom:1px solid #1f1f1f;';
+    platforms.forEach(function(p, i) {
+      var tab = document.createElement('button');
+      tab.id = 'tab-' + p.id;
+      tab.style.cssText = 'flex:1;padding:12px;background:' + (i===0?'#1e1e1e':'none') + ';border:none;border-bottom:2px solid ' + (i===0?p.kleur:'transparent') + ';color:' + (i===0?'#fff':'#666') + ';font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;';
+      tab.textContent = p.emoji + ' ' + p.naam;
+      tab.onclick = function() { wisselTab(p.id); };
+      tabsDiv.appendChild(tab);
+    });
+    wrapper.appendChild(tabsDiv);
+
+    // Panels
+    platforms.forEach(function(p, i) {
+      var panel = document.createElement('div');
+      panel.id = 'panel-' + p.id;
+      panel.style.cssText = 'display:' + (i===0?'block':'none') + ';padding:20px 24px;';
+
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:16px;margin-bottom:12px;';
+      var tekst = document.createElement('div');
+      tekst.id = 'tekst-' + p.id;
+      tekst.style.cssText = 'font-size:13px;line-height:1.75;color:#e0e0e0;white-space:pre-wrap;';
+      tekst.textContent = p.tekst;
+      box.appendChild(tekst);
+      panel.appendChild(box);
+
+      var footer = document.createElement('div');
+      footer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
+      var teller = document.createElement('span');
+      teller.style.cssText = 'font-size:11px;color:#555;';
+      teller.textContent = (p.tekst ? p.tekst.length : 0) + ' tekens';
+      var kopieer = document.createElement('button');
+      kopieer.style.cssText = 'background:' + p.kleur + ';color:white;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;';
+      kopieer.textContent = '📋 Kopieer';
+      (function(pid) {
+        kopieer.onclick = function() { kopieerSocial(pid, kopieer); };
+      })(p.id);
+      footer.appendChild(teller);
+      footer.appendChild(kopieer);
+      panel.appendChild(footer);
+      wrapper.appendChild(panel);
+    });
+
+    popup.appendChild(wrapper);
     document.body.appendChild(popup);
     popup.addEventListener('click', function(e) { if (e.target === popup) popup.remove(); });
   }
+  function sluitSocialPopup(btn) {
+    var el = btn;
+    while (el && el.style && !el.style.position.includes('fixed')) el = el.parentElement;
+    if (el) el.remove();
+  }
 
-  function wisselTab(id) {
+    function wisselTab(id) {
     var platforms = ['linkedin', 'facebook', 'funda'];
     var kleuren = { linkedin: '#0A66C2', facebook: '#1877F2', funda: '#F26A1B' };
     platforms.forEach(function(p) {
