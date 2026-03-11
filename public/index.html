@@ -24,8 +24,8 @@
   .logo span { color: var(--o); }
   .nav-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--grijs); background: var(--bg3); border: 1px solid #2a2a2a; padding: 6px 12px; border-radius: 100px; }
 
-  .app { display: grid; grid-template-columns: 460px 1fr; min-height: calc(100vh - 65px); }
-  .paneel-links { border-right: 1px solid #1a1a1a; padding: 32px; overflow-y: auto; background: var(--bg2); }
+  .app { display: grid; grid-template-columns: 460px 1fr; height: calc(100vh - 65px); }
+  .paneel-links { border-right: 1px solid #1a1a1a; padding: 32px; overflow-y: auto; background: var(--bg2); height: 100%; box-sizing: border-box; }
   .paneel-titel { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
   .paneel-sub { font-size: 13px; color: var(--grijs2); margin-bottom: 28px; line-height: 1.5; }
 
@@ -94,19 +94,19 @@
   .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .paneel-rechts { padding: 32px 40px; display: flex; flex-direction: column; }
+  .paneel-rechts { padding: 32px 40px; display: flex; flex-direction: column; overflow-y: auto; height: 100%; box-sizing: border-box; }
   .resultaat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
   .resultaat-header h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
   .resultaat-acties { display: flex; gap: 8px; }
   .actie-btn { background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 500; color: var(--grijs2); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; }
   .actie-btn:hover { border-color: var(--o); color: var(--o); }
 
-  .leeg-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px; }
+  .leeg-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px; position: sticky; top: 0; min-height: calc(100vh - 130px); }
   .leeg-icon { font-size: 56px; margin-bottom: 20px; }
   .leeg-state h3 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #444; }
   .leeg-state p { font-size: 14px; color: #333; max-width: 320px; line-height: 1.6; }
 
-  .loading-state { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+  .loading-state { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 20px; position: sticky; top: 0; min-height: calc(100vh - 130px); }
   .loading-bar-wrap { width: 280px; background: var(--bg3); border-radius: 100px; height: 4px; overflow: hidden; }
   .loading-bar { height: 100%; background: linear-gradient(90deg, var(--o), var(--o2)); border-radius: 100px; animation: laden 2s ease-in-out infinite; }
   @keyframes laden { 0% { transform: translateX(-100%); width: 40%; } 50% { width: 70%; } 100% { transform: translateX(350%); width: 30%; } }
