@@ -309,4 +309,52 @@ function bouwHandmatigPrompt(data, toon, stijlInstructie) {
     PROMPT_STRUCTUUR;
 }
 
+
+// ─── SOCIAL MEDIA PAKKET (PRO) ────────────────────────────────────────────────
+
+app.post('/api/social', async (req, res) => {
+  try {
+    const { titel, volledig, kort, toon, code } = req.body;
+    const codes = laadCodes();
+    const gebruiker = codes.find(c => c.code === (code || '').toUpperCase());
+    const isPro = gebruiker && gebruiker.type === 'pro';
+    if (!isPro) return res.status(403).json({ error: 'Pro account vereist' });
+    if (!volledig) return res.status(400).json({ error: 'Geen tekst beschikbaar' });
+
+    const prompt = `Je bent een social media expert voor Nederlandse makelaars. Maak op basis van onderstaande Funda verkooptekst drie aparte social media posts.
+
+PANDTITEL: ${titel}
+KORTE OMSCHRIJVING: ${kort}
+VOLLEDIGE TEKST: ${volledig}
+
+Genereer EXACT deze structuur:
+
+LINKEDIN:
+[Professionele post, 150-200 woorden. Begin met een pakkende openingszin. Vertel het verhaal van de woning vanuit zakelijk perspectief. Eindig met een call-to-action. Geen hashtags, wel 1-2 emoji's.]
+
+FACEBOOK:
+[Toegankelijke en warme post, 100-150 woorden. Persoonlijker toon, spreek de lezer direct aan. Beschrijf het gevoel van thuis zijn. 3-4 relevante hashtags aan het eind.]
+
+FUNDA:
+[Exacte Funda-stijl intro van precies 56 woorden. Zakelijk maar uitnodigend. Geen hashtags. Dit is de tekst die direct zichtbaar is in de zoekresultaten.]
+
+Schrijfstijl: ${toon || 'Professioneel en betrouwbaar'}
+Regels: Varieer de invalshoek per platform. Geen clichés. Schrijf in correct Nederlands.`;
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const raw = response.content.map(i => i.text || '').join('');
+    const resultaat = raw.replace(/\*\*/g, '').replace(/\*/g, '');
+    res.json({ resultaat });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message || 'Er ging iets mis' });
+  }
+});
+
 app.listen(PORT, () => console.log('PandAI draait op poort ' + PORT));
