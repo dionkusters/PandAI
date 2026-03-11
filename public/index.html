@@ -121,6 +121,23 @@
 
   .fout-melding { display: none; background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); border-radius: 10px; padding: 16px; color: #ff8888; font-size: 13px; margin-top: 12px; line-height: 1.6; }
 
+  .stijl-sectie { background: linear-gradient(135deg, rgba(242,106,27,0.06), rgba(255,140,66,0.03)); border: 1px solid rgba(242,106,27,0.2); border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+  .stijl-sectie-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .stijl-titel { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--wit); display: flex; align-items: center; gap: 8px; }
+  .stijl-badge { font-size: 9px; background: var(--o); color: white; padding: 2px 7px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+  .stijl-sub { font-size: 12px; color: var(--grijs2); margin-bottom: 14px; line-height: 1.5; }
+  .stijl-teksten { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .stijl-tekst-item { position: relative; }
+  .stijl-tekst-item textarea { width: 100%; background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 36px 10px 12px; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--grijs2); outline: none; resize: none; transition: border-color 0.2s; line-height: 1.6; }
+  .stijl-tekst-item textarea:focus { border-color: rgba(242,106,27,0.4); color: var(--wit); }
+  .stijl-tekst-item textarea.heeft-tekst { border-color: rgba(242,106,27,0.3); color: var(--wit); }
+  .stijl-verwijder { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #444; cursor: pointer; font-size: 14px; transition: color 0.2s; }
+  .stijl-verwijder:hover { color: #ff4444; }
+  .stijl-voeg-toe { width: 100%; background: none; border: 1px dashed #333; border-radius: 8px; padding: 8px; font-size: 12px; color: var(--grijs); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .stijl-voeg-toe:hover { border-color: var(--o); color: var(--o); }
+  .stijl-actief { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4CAF50; margin-top: 8px; }
+  .stijl-actief-dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF50; }
+
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
     .paneel-links { border-right: none; border-bottom: 1px solid #1a1a1a; }
@@ -139,6 +156,25 @@
   <div class="paneel-links">
     <div class="paneel-titel">Inventarisatie uploaden</div>
     <div class="paneel-sub">Upload het ingevulde formulier van de bezichtiging — PandAI leest het automatisch uit en schrijft de verkooptekst.</div>
+
+    <!-- SCHRIJFSTIJL SECTIE -->
+    <div class="stijl-sectie">
+      <div class="stijl-sectie-header">
+        <div class="stijl-titel">✍️ Jouw schrijfstijl <span class="stijl-badge">Uniek</span></div>
+      </div>
+      <div class="stijl-sub">Plak 1-3 van jouw beste verkoopteksten — PandAI leert hoe jij schrijft en past die stijl toe op elke nieuwe tekst.</div>
+      <div class="stijl-teksten" id="stijl-teksten">
+        <div class="stijl-tekst-item">
+          <textarea rows="4" placeholder="Plak hier een voorbeeld van jouw schrijfstijl... (bijv. een eerder geschreven Funda tekst)" oninput="stijlTekstGewijzigd(this)"></textarea>
+          <button class="stijl-verwijder" onclick="verwijderStijlTekst(this)" title="Verwijder">✕</button>
+        </div>
+      </div>
+      <button class="stijl-voeg-toe" onclick="voegStijlTekstToe()">+ Voeg nog een voorbeeldtekst toe</button>
+      <div class="stijl-actief" id="stijl-actief" style="display:none">
+        <div class="stijl-actief-dot"></div>
+        <span id="stijl-actief-tekst">Schrijfstijl actief — PandAI schrijft zoals jij</span>
+      </div>
+    </div>
 
     <div class="upload-zone" id="upload-zone"
       ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropBestand(event)">
@@ -519,6 +555,49 @@
   let bestandBase64 = '';
   let bestandMediaType = '';
 
+  function stijlTekstGewijzigd(el) {
+    el.classList.toggle('heeft-tekst', el.value.trim().length > 0);
+    updateStijlStatus();
+  }
+
+  function updateStijlStatus() {
+    const teksten = verzamelStijlTeksten();
+    const actief = document.getElementById('stijl-actief');
+    const tekst = document.getElementById('stijl-actief-tekst');
+    if (teksten.length > 0) {
+      actief.style.display = 'flex';
+      tekst.textContent = teksten.length === 1 ? 'Schrijfstijl actief — PandAI schrijft zoals jij' : teksten.length + ' voorbeeldteksten — schrijfstijl actief';
+    } else {
+      actief.style.display = 'none';
+    }
+  }
+
+  function voegStijlTekstToe() {
+    const container = document.getElementById('stijl-teksten');
+    const nieuw = document.createElement('div');
+    nieuw.className = 'stijl-tekst-item';
+    nieuw.innerHTML = '<textarea rows="4" placeholder="Plak hier een volgende voorbeeldtekst..." oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)" title="Verwijder">✕</button>';
+    container.appendChild(nieuw);
+  }
+
+  function verwijderStijlTekst(btn) {
+    const item = btn.closest('.stijl-tekst-item');
+    const container = document.getElementById('stijl-teksten');
+    if (container.children.length > 1) {
+      item.remove();
+    } else {
+      item.querySelector('textarea').value = '';
+      item.querySelector('textarea').classList.remove('heeft-tekst');
+    }
+    updateStijlStatus();
+  }
+
+  function verzamelStijlTeksten() {
+    return Array.from(document.querySelectorAll('#stijl-teksten textarea'))
+      .map(el => el.value.trim())
+      .filter(t => t.length > 50);
+  }
+
   function dragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
   function dragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
   function dropBestand(e) { e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag-over'); if (e.dataTransfer.files[0]) verwerkBestand(e.dataTransfer.files[0]); }
@@ -609,6 +688,12 @@
 
     try {
       const body = { toon: geselecteerdeToon };
+
+      // Voeg schrijfstijl voorbeelden toe
+      const stijlTeksten = verzamelStijlTeksten();
+      if (stijlTeksten.length > 0) {
+        body.schrijfstijl = stijlTeksten;
+      }
 
       if (bestandBase64) {
         body.fileBase64 = bestandBase64;
