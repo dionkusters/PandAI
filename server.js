@@ -94,21 +94,19 @@ ${Object.entries(data).map(([k, v]) => `- ${k}: ${v}`).join('\n')}
 
 Schrijfstijl: ${toon}
 
-Genereer met EXACT deze structuur:
+Genereer een professionele Funda verkooptekst met EXACT deze structuur:
 
 TITEL:
-[Pakkende titel maximaal 12 woorden]
+[Pakkende titel van 7-12 woorden die het unieke kenmerk benadrukt]
 
 KORT:
-[Funda intro 2-3 zinnen, max 60 woorden]
+[Precies 56 woorden - Funda intro die direct zichtbaar is. Begin met het sterkste kenmerk, eindig met een nieuwsgierigheidsprikkel]
 
 VOLLEDIG:
-[Verkooptekst 150-200 woorden, geen bulletpoints, eindig met uitnodiging tot bezichtiging]
+[350-500 woorden. Alinea 1: sfeer en gevoel. Alinea 2: begane grond. Alinea 3: verdiepingen en slaapkamers. Alinea 4: tuin en buitenruimte. Alinea 5: locatie en omgeving. Sluit af met 5-7 bullet punten van de belangrijkste kenmerken en een uitnodiging tot bezichtiging]
 
 SOCIAL:
-[Social media caption max 80 woorden met 4-5 hashtags]
+[Max 80 woorden, creatieve invalshoek, 4-5 relevante hashtags]
 
-Schrijf in correct Nederlands.`;
+Regels: varieer de opbouw elke keer. Begin nooit met "Deze woning" of "Dit pand". Vermijd cliches. Schrijf vanuit perspectief van de koper. Gebruik concrete feiten. Schrijf in correct Nederlands.`;
 }
-
-app.listen(PORT, () => console.log(`PandAI draait op poort ${PORT}`));
