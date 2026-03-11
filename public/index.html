@@ -479,6 +479,7 @@
       <h2>Gegenereerde teksten</h2>
       <div class="resultaat-acties">
         <button class="actie-btn" onclick="allesKopieren()" id="kopieer-alles" style="display:none">📋 Alles kopiëren</button>
+        <button class="actie-btn" onclick="exporteerPDF()" id="pdf-export-btn" style="display:none">📄 PDF exporteren</button>
         <button class="actie-btn" onclick="genereerTekst()" id="opnieuw-btn" style="display:none">↺ Opnieuw</button>
       </div>
     </div>
@@ -749,6 +750,7 @@
     document.getElementById('tekst-output').style.display = 'flex';
     document.getElementById('score-rij').style.display = 'flex';
     document.getElementById('kopieer-alles').style.display = 'flex';
+    if (pandaiType === 'pro') document.getElementById('pdf-export-btn').style.display = 'flex';
     document.getElementById('opnieuw-btn').style.display = 'flex';
     document.querySelector('.paneel-rechts').scrollIntoView({ behavior: 'smooth' });
   }
@@ -1023,7 +1025,7 @@
     setTimeout(function() { activeerStap(2); }, 800);
     setTimeout(function() { activeerStap(3); }, 2000);
     try {
-      var body = { toon: geselecteerdeToon };
+      var body = { toon: geselecteerdeToon, code: pandaiCode || '' };
       var stijlTeksten = verzamelStijlTeksten();
       if (stijlTeksten.length > 0) body.schrijfstijl = stijlTeksten;
       if (bestandBase64) {
@@ -1078,6 +1080,7 @@
       document.getElementById('tekst-output').style.display = 'flex';
       document.getElementById('score-rij').style.display = 'flex';
       document.getElementById('kopieer-alles').style.display = 'flex';
+      if (pandaiType === 'pro') document.getElementById('pdf-export-btn').style.display = 'flex';
       document.getElementById('opnieuw-btn').style.display = 'flex';
     } catch(err) {
       document.getElementById('loading-state').style.display = 'none';
@@ -1109,6 +1112,32 @@
       return labels[id] + ':\n' + document.getElementById(id + '-inhoud').textContent;
     }).join('\n\n');
     navigator.clipboard.writeText(alles);
+  }
+
+  // ===== PDF EXPORT (PRO) =====
+  function exporteerPDF() {
+    var titel = document.getElementById('titel-inhoud').textContent.trim();
+    var kort = document.getElementById('kort-inhoud').textContent.trim();
+    var volledig = document.getElementById('volledig-inhoud').textContent.trim();
+    var social = document.getElementById('social-inhoud').textContent.trim();
+    if (!titel) { alert('Genereer eerst een tekst.'); return; }
+
+    var win = window.open('', '_blank');
+    win.document.write('<html><head><meta charset="UTF-8"><title>' + titel + '</title><style>');
+    win.document.write('body{font-family:Georgia,serif;max-width:700px;margin:40px auto;padding:0 24px;color:#222;line-height:1.7}');
+    win.document.write('h1{font-size:22px;margin-bottom:8px;color:#111}');
+    win.document.write('.label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin:24px 0 6px}');
+    win.document.write('.sectie{font-size:15px;white-space:pre-wrap}');
+    win.document.write('.footer{margin-top:40px;font-size:11px;color:#bbb;border-top:1px solid #eee;padding-top:12px}');
+    win.document.write('</style></head><body>');
+    win.document.write('<h1>' + titel + '</h1>');
+    win.document.write('<div class="label">KORTE OMSCHRIJVING</div><div class="sectie">' + kort + '</div>');
+    win.document.write('<div class="label">VOLLEDIGE TEKST</div><div class="sectie">' + volledig + '</div>');
+    win.document.write('<div class="label">SOCIAL MEDIA</div><div class="sectie">' + social + '</div>');
+    win.document.write('<div class="footer">Gegenereerd met PandAI &mdash; www.getpandai.nl</div>');
+    win.document.write('</body></html>');
+    win.document.close();
+    setTimeout(function() { win.print(); }, 400);
   }
 </script>
 </body>
