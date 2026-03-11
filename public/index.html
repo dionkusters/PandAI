@@ -21,8 +21,7 @@
   .logo span { color: var(--o); }
   .nav-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--grijs); background: var(--bg3); border: 1px solid #2a2a2a; padding: 6px 12px; border-radius: 100px; }
 
-  .app { display: grid; grid-template-columns: 440px 1fr; min-height: calc(100vh - 65px); }
-
+  .app { display: grid; grid-template-columns: 460px 1fr; min-height: calc(100vh - 65px); }
   .paneel-links { border-right: 1px solid #1a1a1a; padding: 32px; overflow-y: auto; background: var(--bg2); }
   .paneel-titel { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
   .paneel-sub { font-size: 13px; color: var(--grijs2); margin-bottom: 28px; line-height: 1.5; }
@@ -55,7 +54,7 @@
   .handmatig-formulier { display: none; padding-top: 20px; }
   .handmatig-formulier.open { display: block; }
 
-  .form-sectie { margin-bottom: 20px; }
+  .form-sectie { margin-bottom: 24px; }
   .form-sectie-titel { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--o); font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .form-sectie-titel::after { content: ''; flex: 1; height: 1px; background: #222; }
 
@@ -65,15 +64,16 @@
   .veld input:focus, .veld select:focus, .veld textarea:focus { border-color: var(--o); }
   .veld select option { background: var(--bg3); }
   .veld-rij { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .veld-rij-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
-  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .checkbox-item { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 12px; cursor: pointer; transition: all 0.2s; font-size: 12px; color: var(--grijs2); user-select: none; }
+  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .checkbox-item { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: all 0.2s; font-size: 12px; color: var(--grijs2); user-select: none; }
   .checkbox-item:hover { border-color: #444; color: var(--wit); }
   .checkbox-item.actief { border-color: var(--o); color: var(--o); background: rgba(242,106,27,0.08); }
   .checkbox-dot { width: 14px; height: 14px; border: 1.5px solid currentColor; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; }
   .checkbox-item.actief .checkbox-dot::after { content: '✓'; }
 
-  .toon-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; margin-bottom: 4px; }
+  .toon-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
   .toon-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--o); font-weight: 600; margin-top: 20px; margin-bottom: 12px; }
   .toon-btn { background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 100px; padding: 7px 14px; font-size: 12px; color: var(--grijs2); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
   .toon-btn:hover { border-color: #444; color: var(--wit); }
@@ -171,15 +171,26 @@
     </button>
 
     <div class="handmatig-formulier" id="handmatig-formulier">
+
+      <!-- BASISINFORMATIE -->
       <div class="form-sectie" style="margin-top:16px">
         <div class="form-sectie-titel">Basisinformatie</div>
         <div class="veld">
           <label>Type woning</label>
           <select id="type">
-            <option>Tussenwoning</option><option>Hoekwoning</option>
-            <option>Vrijstaande woning</option><option>Twee-onder-een-kap</option>
-            <option>Appartement</option><option>Penthouse</option>
-            <option>Villa</option><option>Bungalow</option>
+            <option>Tussenwoning</option>
+            <option>Hoekwoning</option>
+            <option>Vrijstaande woning</option>
+            <option>Twee-onder-een-kap</option>
+            <option>Geschakelde woning</option>
+            <option>Appartement</option>
+            <option>Penthouse</option>
+            <option>Maisonette</option>
+            <option>Villa</option>
+            <option>Bungalow</option>
+            <option>Woonboerderij</option>
+            <option>Grachtenpand</option>
+            <option>Landhuis</option>
           </select>
         </div>
         <div class="veld-rij">
@@ -188,43 +199,246 @@
         </div>
         <div class="veld-rij">
           <div class="veld"><label>Kamers</label><input type="number" id="kamers" placeholder="5"></div>
+          <div class="veld"><label>Slaapkamers</label><input type="number" id="slaapkamers" placeholder="3"></div>
+        </div>
+        <div class="veld-rij">
+          <div class="veld"><label>Badkamers</label><input type="number" id="badkamers" placeholder="1"></div>
           <div class="veld"><label>Bouwjaar</label><input type="number" id="bouwjaar" placeholder="1998"></div>
         </div>
-        <div class="veld"><label>Stad / buurt</label><input type="text" id="locatie" placeholder="Amsterdam, De Pijp"></div>
         <div class="veld-rij">
+          <div class="veld"><label>Verdiepingen</label><input type="number" id="verdiepingen" placeholder="2"></div>
           <div class="veld">
             <label>Energielabel</label>
             <select id="energielabel">
               <option value="">Onbekend</option>
-              <option>A+++</option><option>A++</option><option>A+</option><option>A</option>
+              <option>A++++</option><option>A+++</option><option>A++</option><option>A+</option><option>A</option>
               <option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option>
             </select>
           </div>
+        </div>
+        <div class="veld"><label>Adres / Stad / Buurt</label><input type="text" id="locatie" placeholder="Van Heemstraweg, Druten (Gelderland)"></div>
+        <div class="veld-rij">
           <div class="veld"><label>Vraagprijs</label><input type="text" id="prijs" placeholder="€ 425.000"></div>
+          <div class="veld">
+            <label>Status</label>
+            <select id="status">
+              <option>Beschikbaar</option>
+              <option>Onder bod</option>
+              <option>Verkocht</option>
+              <option>Nieuwbouw</option>
+            </select>
+          </div>
         </div>
       </div>
 
+      <!-- WOONLAGEN -->
       <div class="form-sectie">
-        <div class="form-sectie-titel">Kenmerken</div>
-        <div class="checkbox-grid" id="kenmerken">
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Moderne keuken</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Luxe badkamer</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zonnige tuin</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Garage / parkeren</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakkapel</span></label>
+        <div class="form-sectie-titel">Indeling woning</div>
+        <div class="veld">
+          <label>Begane grond</label>
+          <textarea id="bg-grond" rows="2" placeholder="Hal, toilet, woonkamer met open keuken, bijkeuken, garage"></textarea>
+        </div>
+        <div class="veld">
+          <label>1e verdieping</label>
+          <textarea id="verdieping1" rows="2" placeholder="3 slaapkamers, badkamer met douche en ligbad, apart toilet"></textarea>
+        </div>
+        <div class="veld">
+          <label>2e verdieping / Zolder</label>
+          <textarea id="verdieping2" rows="2" placeholder="Zolderkamer, berging, CV-installatie"></textarea>
+        </div>
+      </div>
+
+      <!-- KEUKEN -->
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Keuken</div>
+        <div class="veld-rij">
+          <div class="veld">
+            <label>Type keuken</label>
+            <select id="keuken-type">
+              <option value="">Niet opgeven</option>
+              <option>Open keuken</option>
+              <option>Halfopen keuken</option>
+              <option>Gesloten keuken</option>
+              <option>Keuken-eetkamer</option>
+            </select>
+          </div>
+          <div class="veld">
+            <label>Keukenopstelling</label>
+            <select id="keuken-opstelling">
+              <option value="">Niet opgeven</option>
+              <option>Rechte keuken</option>
+              <option>L-keuken</option>
+              <option>U-keuken</option>
+              <option>Kookeiland</option>
+              <option>Hoefijzerkeuken</option>
+            </select>
+          </div>
+        </div>
+        <div class="checkbox-grid" id="keuken-kenmerken">
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Inbouwapparatuur</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Quooker / kokendwaterkraan</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vaatwasser</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Inductiekookplaat</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Gaskookplaat</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Wijnklimaatkast</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Granieten aanrechtblad</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Composiet aanrechtblad</span></label>
+        </div>
+      </div>
+
+      <!-- BADKAMER -->
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Badkamer</div>
+        <div class="checkbox-grid" id="badkamer-kenmerken">
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Douche</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Ligbad</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Inloopdouche</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dubbele wastafel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vloerverwarming badkamer</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Badkamermeubel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Regendouche</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Sauna</span></label>
+        </div>
+      </div>
+
+      <!-- VERWARMING & ENERGIE -->
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Verwarming & Energie</div>
+        <div class="veld-rij">
+          <div class="veld">
+            <label>Verwarmingstype</label>
+            <select id="verwarming">
+              <option value="">Niet opgeven</option>
+              <option>CV-ketel</option>
+              <option>Warmtepomp</option>
+              <option>Stadsverwarming</option>
+              <option>Vloerverwarming (volledig)</option>
+              <option>Blokverwarming</option>
+              <option>Gaskachels</option>
+            </select>
+          </div>
+          <div class="veld">
+            <label>Warm water</label>
+            <select id="warm-water">
+              <option value="">Niet opgeven</option>
+              <option>CV-ketel</option>
+              <option>Elektrische boiler</option>
+              <option>Warmtepomp boiler</option>
+              <option>Zonneboiler</option>
+            </select>
+          </div>
+        </div>
+        <div class="checkbox-grid" id="energie-kenmerken">
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zonnepanelen</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vloerverwarming</span></label>
           <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Airconditioning</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Open woonkamer</span></label>
-          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Rustige straat</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Warmtepomp</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zonneboiler</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Ventilatiesysteem</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dubbel glas (HR++)</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Triple glas</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Spouwmuurisolatie</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakisolatie</span></label>
         </div>
       </div>
 
+      <!-- TUIN & BUITENRUIMTE -->
       <div class="form-sectie">
-        <div class="form-sectie-titel">Extra</div>
-        <div class="veld"><textarea id="extra" rows="3" placeholder="Bijv: recent gerenoveerd, prachtig uitzicht..."></textarea></div>
+        <div class="form-sectie-titel">Tuin & Buitenruimte</div>
+        <div class="veld-rij">
+          <div class="veld">
+            <label>Tuinligging</label>
+            <select id="tuin-ligging">
+              <option value="">Geen tuin</option>
+              <option>Noord</option><option>Noord-oost</option><option>Oost</option>
+              <option>Zuid-oost</option><option>Zuid</option><option>Zuid-west</option>
+              <option>West</option><option>Noord-west</option>
+            </select>
+          </div>
+          <div class="veld"><label>Tuinoppervlak (m²)</label><input type="number" id="tuin-oppervlak" placeholder="80"></div>
+        </div>
+        <div class="checkbox-grid" id="tuin-kenmerken">
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Achtertuin</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Voortuin</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zijtuin</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Terras</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakterras</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Balkon</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Loggia</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Veranda</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zwembad</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Jacuzzi buiten</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Schuur / berging</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Serre</span></label>
+        </div>
       </div>
-    </div>
+
+      <!-- PARKEREN & OPSLAG -->
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Parkeren & Opslag</div>
+        <div class="checkbox-grid" id="parkeren-kenmerken">
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Garage</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dubbele garage</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Carport</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Oprit / eigen parkeerplaats</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Parkeerkelder</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Laadpaal elektrisch</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Berging</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Kelder</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Zolder</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Hobbyruimte</span></label>
+        </div>
+      </div>
+
+      <!-- WOONCOMFORT -->
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Wooncomfort & Interieur</div>
+        <div class="checkbox-grid" id="comfort-kenmerken">
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Open woonkamer</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Hoge plafonds</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakkapel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Dakraam / Velux</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Erker / uitbouw</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Lichtkoepel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Open haard</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Houtkachel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Rolstoeltoegankelijk</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Lift aanwezig</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Smarthome systeem</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Alarmsysteem</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Videodeurbel</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Ingebouwde kasten</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Wasruimte</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Werkruimte / kantoor</span></label>
+        </div>
+      </div>
+
+      <!-- LOCATIE & OMGEVING -->
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Locatie & Omgeving</div>
+        <div class="checkbox-grid" id="locatie-kenmerken">
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Rustige straat</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Doodlopende straat</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Centrum / binnenstad</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Aan het water</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Vrij uitzicht</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Natuur / groen in de buurt</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Nabij openbaar vervoer</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Nabij snelweg</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Scholen in de buurt</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Winkels op loopafstand</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Recreatiemogelijkheden</span></label>
+          <label class="checkbox-item" onclick="toggleCheck(this)"><div class="checkbox-dot"></div><span>Sportvoorzieningen</span></label>
+        </div>
+      </div>
+
+      <!-- EXTRA -->
+      <div class="form-sectie">
+        <div class="form-sectie-titel">Extra informatie</div>
+        <div class="veld"><textarea id="extra" rows="3" placeholder="Bijv: recent volledig gerenoveerd, uniek uitzicht op de gracht, monumentaal pand, kantoor aan huis mogelijk..."></textarea></div>
+      </div>
+
+    </div><!-- einde handmatig-formulier -->
 
     <div class="toon-label">Schrijfstijl</div>
     <div class="toon-grid">
@@ -371,6 +585,11 @@
     }
   }
 
+  function verzamelKenmerken(containerId) {
+    return Array.from(document.querySelectorAll('#' + containerId + ' .checkbox-item.actief'))
+      .map(el => el.querySelector('span').textContent);
+  }
+
   async function genereerTekst() {
     const btn = document.getElementById('genereer-btn');
     btn.disabled = true;
@@ -397,18 +616,44 @@
       } else if (uitgelezenTekst) {
         body.tekst = uitgelezenTekst;
       } else {
+        const alleKenmerken = [
+          ...verzamelKenmerken('keuken-kenmerken'),
+          ...verzamelKenmerken('badkamer-kenmerken'),
+          ...verzamelKenmerken('energie-kenmerken'),
+          ...verzamelKenmerken('tuin-kenmerken'),
+          ...verzamelKenmerken('parkeren-kenmerken'),
+          ...verzamelKenmerken('comfort-kenmerken'),
+          ...verzamelKenmerken('locatie-kenmerken')
+        ].filter(Boolean);
+
         body.data = {
           'Type woning': document.getElementById('type').value,
-          'Woonoppervlak': document.getElementById('oppervlak').value + ' m²',
-          'Perceeloppervlak': document.getElementById('perceel').value + ' m²',
+          'Woonoppervlak': document.getElementById('oppervlak').value ? document.getElementById('oppervlak').value + ' m2' : '',
+          'Perceeloppervlak': document.getElementById('perceel').value ? document.getElementById('perceel').value + ' m2' : '',
           'Kamers': document.getElementById('kamers').value,
+          'Slaapkamers': document.getElementById('slaapkamers').value,
+          'Badkamers': document.getElementById('badkamers').value,
+          'Verdiepingen': document.getElementById('verdiepingen').value,
           'Bouwjaar': document.getElementById('bouwjaar').value,
-          'Locatie': document.getElementById('locatie').value,
           'Energielabel': document.getElementById('energielabel').value,
+          'Locatie': document.getElementById('locatie').value,
           'Vraagprijs': document.getElementById('prijs').value,
-          'Kenmerken': Array.from(document.querySelectorAll('#kenmerken .checkbox-item.actief')).map(el => el.querySelector('span').textContent).join(', '),
-          'Extra': document.getElementById('extra').value
+          'Status': document.getElementById('status').value,
+          'Begane grond indeling': document.getElementById('bg-grond').value,
+          '1e verdieping indeling': document.getElementById('verdieping1').value,
+          '2e verdieping / zolder': document.getElementById('verdieping2').value,
+          'Type keuken': document.getElementById('keuken-type').value,
+          'Keukenopstelling': document.getElementById('keuken-opstelling').value,
+          'Verwarmingstype': document.getElementById('verwarming').value,
+          'Warm water': document.getElementById('warm-water').value,
+          'Tuinligging': document.getElementById('tuin-ligging').value,
+          'Tuinoppervlak': document.getElementById('tuin-oppervlak').value ? document.getElementById('tuin-oppervlak').value + ' m2' : '',
+          'Kenmerken': alleKenmerken.join(', '),
+          'Extra informatie': document.getElementById('extra').value
         };
+
+        // Verwijder lege velden
+        Object.keys(body.data).forEach(k => { if (!body.data[k]) delete body.data[k]; });
       }
 
       const resp = await fetch('/api/genereer', {
@@ -439,22 +684,22 @@
       document.getElementById('leeg-state').style.display = 'flex';
       const fout = document.getElementById('fout-melding');
       fout.style.display = 'block';
-      fout.textContent = '⚠️ ' + (err.message || 'Er ging iets mis. Controleer je verbinding en probeer opnieuw.');
+      fout.textContent = 'Fout: ' + (err.message || 'Er ging iets mis. Controleer je verbinding en probeer opnieuw.');
     }
 
     btn.disabled = false;
     document.getElementById('spinner').style.display = 'none';
-    document.getElementById('btn-tekst').textContent = '✨ Genereer verkoopteksten';
+    document.getElementById('btn-tekst').textContent = 'Genereer verkoopteksten';
   }
 
   function parseSectie(tekst, label) {
-    const match = tekst.match(new RegExp(label + ':\\s*([\\s\\S]*?)(?=\\n[A-Z]+:|$)', 'i'));
+    const match = tekst.match(new RegExp(label + ':[\\s]*([\\s\\S]*?)(?=\\n[A-Z]+:|$)', 'i'));
     return match ? match[1].trim() : '';
   }
 
   function kopieer(id, btn) {
     navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
-      const orig = btn.textContent; btn.textContent = '✓ Gekopieerd!'; btn.style.color = '#4CAF50';
+      const orig = btn.textContent; btn.textContent = 'Gekopieerd!'; btn.style.color = '#4CAF50';
       setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
     });
   }
