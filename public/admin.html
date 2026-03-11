@@ -4,19 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PandAI — Admin</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#0E0E0E; color:#F5F5F0; font-family:'DM Sans',sans-serif; min-height:100vh; }
   nav { display:flex; align-items:center; justify-content:space-between; padding:16px 40px; border-bottom:1px solid #1a1a1a; background:#161616; }
   .logo { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
-  .logo span { color:#F26A1B; }
-  .nav-badge { font-size:10px; background:#F26A1B; color:white; padding:3px 10px; border-radius:100px; letter-spacing:1px; }
+  .logo > span:first-child { color:#F26A1B; }
+  .logo .admin-badge { font-size:10px; background:#F26A1B; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; padding:3px 10px; border-radius:100px; letter-spacing:1px; font-weight:700; }
+  .nav-badge { font-size:10px; background:#F26A1B; color:#ffffff; padding:3px 10px; border-radius:100px; letter-spacing:1px; font-weight:700; }
   .uitloggen { background:none; border:1px solid #2a2a2a; color:#666; padding:6px 14px; border-radius:6px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; }
   .uitloggen:hover { border-color:#444; color:#fff; }
 
-  #login-scherm { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 57px); }
-  .login-card { background:#161616; border:1px solid #1f1f1f; border-radius:16px; padding:32px; width:360px; }
+  #login-scherm { 
+    display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 57px);
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600&q=80') center/cover no-repeat;
+  }
+  .login-card { background:rgba(14,14,14,0.92); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:32px; width:360px; backdrop-filter:blur(20px); }
   .login-card h2 { font-family:'Syne',sans-serif; font-size:18px; margin-bottom:6px; }
   .login-card p { font-size:13px; color:#666; margin-bottom:20px; }
   input { width:100%; background:#1E1E1E; border:1px solid #2a2a2a; border-radius:8px; padding:12px 14px; font-size:13px; font-family:'DM Sans',sans-serif; color:#F5F5F0; outline:none; transition:border-color 0.2s; }
@@ -69,7 +74,7 @@
 <body>
 
 <nav>
-  <div class="logo">Pand<span>AI</span> <span class="nav-badge">ADMIN</span></div>
+  <div class="logo">Pand<span>AI</span> <span class="admin-badge">ADMIN</span></div>
   <button class="uitloggen" onclick="uitloggen()">Uitloggen</button>
 </nav>
 
