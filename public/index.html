@@ -1217,7 +1217,7 @@
   }
 
   function parseSocialSectie(tekst, naam) {
-    var re = new RegExp(naam + ':\s*([\s\S]*?)(?=\n(?:LINKEDIN|FACEBOOK|FUNDA):|$)', 'i');
+    var re = new RegExp(naam + ':\\s*([\\s\\S]*?)(?=\\n(?:LINKEDIN|FACEBOOK|FUNDA):|$)', 'i');
     var match = tekst.match(re);
     return match ? match[1].trim() : '';
   }
