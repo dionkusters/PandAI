@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PandAI — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0E0E0E; color:#F5F5F0; font-family:'DM Sans',sans-serif; min-height:100vh; }
+  nav { display:flex; align-items:center; justify-content:space-between; padding:16px 40px; border-bottom:1px solid #1a1a1a; background:#161616; }
+  .logo { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+  .logo span { color:#F26A1B; }
+  .nav-badge { font-size:10px; background:#F26A1B; color:white; padding:3px 10px; border-radius:100px; letter-spacing:1px; }
+  .uitloggen { background:none; border:1px solid #2a2a2a; color:#666; padding:6px 14px; border-radius:6px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; }
+  .uitloggen:hover { border-color:#444; color:#fff; }
+
+  #login-scherm { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 57px); }
+  .login-card { background:#161616; border:1px solid #1f1f1f; border-radius:16px; padding:32px; width:360px; }
+  .login-card h2 { font-family:'Syne',sans-serif; font-size:18px; margin-bottom:6px; }
+  .login-card p { font-size:13px; color:#666; margin-bottom:20px; }
+  input { width:100%; background:#1E1E1E; border:1px solid #2a2a2a; border-radius:8px; padding:12px 14px; font-size:13px; font-family:'DM Sans',sans-serif; color:#F5F5F0; outline:none; transition:border-color 0.2s; }
+  input:focus { border-color:#F26A1B; }
+  .btn { background:linear-gradient(135deg,#F26A1B,#FF8C42); color:white; border:none; border-radius:8px; padding:12px 20px; font-size:13px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; margin-top:12px; width:100%; }
+  .fout { color:#ff8888; font-size:12px; margin-top:10px; display:none; }
+
+  #dashboard { display:none; padding:32px 40px; }
+  .stats-rij { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .stat-kaart { background:#161616; border:1px solid #1f1f1f; border-radius:12px; padding:20px; }
+  .stat-getal { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:#F26A1B; }
+  .stat-label { font-size:12px; color:#666; margin-top:4px; }
+
+  .sectie { background:#161616; border:1px solid #1f1f1f; border-radius:12px; padding:24px; margin-bottom:24px; }
+  .sectie-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .sectie-titel { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+
+  .nieuwe-code { display:flex; gap:10px; }
+  .nieuwe-code input { flex:1; margin:0; }
+  .nieuwe-code .btn { width:auto; margin:0; padding:12px 20px; white-space:nowrap; }
+
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#555; padding:0 0 12px 0; border-bottom:1px solid #1f1f1f; }
+  td { padding:12px 0; border-bottom:1px solid #111; font-size:13px; color:#ccc; }
+  tr:last-child td { border-bottom:none; }
+  .code-badge { font-family:monospace; background:#1E1E1E; border:1px solid #2a2a2a; padding:3px 8px; border-radius:4px; font-size:12px; color:#F26A1B; letter-spacing:1px; }
+  .status-actief { color:#4CAF50; font-size:11px; background:rgba(76,175,80,0.1); border:1px solid rgba(76,175,80,0.2); padding:2px 8px; border-radius:100px; }
+  .status-inactief { color:#ff6b6b; font-size:11px; background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.2); padding:2px 8px; border-radius:100px; }
+  .tabel-btn { background:none; border:1px solid #2a2a2a; border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; font-family:'DM Sans',sans-serif; color:#666; transition:all 0.2s; }
+  .tabel-btn:hover { border-color:#F26A1B; color:#F26A1B; }
+  .tabel-btn.rood:hover { border-color:#ff6b6b; color:#ff6b6b; }
+
+  .log-rij { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #111; font-size:12px; }
+  .log-rij:last-child { border-bottom:none; }
+  .log-actie { font-size:10px; padding:2px 8px; border-radius:100px; }
+  .log-actie.ingelogd { background:rgba(33,150,243,0.1); color:#64B5F6; border:1px solid rgba(33,150,243,0.2); }
+  .log-actie.gegenereerd { background:rgba(76,175,80,0.1); color:#81C784; border:1px solid rgba(76,175,80,0.2); }
+  .log-naam { font-weight:600; color:#fff; }
+  .log-code { font-family:monospace; color:#F26A1B; font-size:11px; }
+  .log-ip { color:#555; font-size:11px; }
+  .log-tijd { color:#444; font-size:11px; margin-left:auto; }
+
+  @media(max-width:768px) {
+    .stats-rij { grid-template-columns:1fr 1fr; }
+    nav, #dashboard { padding:16px 20px; }
+    .nieuwe-code { flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Pand<span>AI</span> <span class="nav-badge">ADMIN</span></div>
+  <button class="uitloggen" onclick="uitloggen()">Uitloggen</button>
+</nav>
+
+<div id="login-scherm">
+  <div class="login-card">
+    <h2>Admin toegang</h2>
+    <p>Voer het admin wachtwoord in om het dashboard te openen.</p>
+    <input type="password" id="ww-input" placeholder="Admin wachtwoord" onkeydown="if(event.key==='Enter')adminInloggen()" autofocus />
+    <button class="btn" onclick="adminInloggen()">Toegang →</button>
+    <div class="fout" id="admin-fout">Ongeldig wachtwoord.</div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="stats-rij">
+    <div class="stat-kaart"><div class="stat-getal" id="stat-codes">0</div><div class="stat-label">Actieve codes</div></div>
+    <div class="stat-kaart"><div class="stat-getal" id="stat-inlogs">0</div><div class="stat-label">Inlogs totaal</div></div>
+    <div class="stat-kaart"><div class="stat-getal" id="stat-generaties">0</div><div class="stat-label">Gegenereerde teksten</div></div>
+    <div class="stat-kaart"><div class="stat-getal" id="stat-vandaag">0</div><div class="stat-label">Acties vandaag</div></div>
+  </div>
+
+  <div class="sectie">
+    <div class="sectie-header">
+      <div class="sectie-titel">🔑 Toegangscodes</div>
+    </div>
+    <div class="nieuwe-code" style="margin-bottom:20px">
+      <input type="text" id="nieuwe-naam" placeholder="Naam makelaar (bijv. Jan de Vries)" />
+      <input type="text" id="nieuwe-code" placeholder="Code (bijv. JANDEVRIES)" style="text-transform:uppercase" />
+      <button class="btn" onclick="maakCode()">+ Aanmaken</button>
+    </div>
+    <table>
+      <thead><tr><th>Code</th><th>Naam</th><th>Status</th><th>Gebruik</th><th>Laatste gebruik</th><th>Acties</th></tr></thead>
+      <tbody id="codes-tabel"></tbody>
+    </table>
+  </div>
+
+  <div class="sectie">
+    <div class="sectie-header">
+      <div class="sectie-titel">📊 Activiteitslog</div>
+      <button class="tabel-btn" onclick="laadData()">↺ Vernieuwen</button>
+    </div>
+    <div id="logs-lijst"></div>
+  </div>
+</div>
+
+<script>
+  let adminWW = '';
+
+  async function adminInloggen() {
+    const ww = document.getElementById('ww-input').value;
+    if (!ww) return;
+
+    const resp = await fetch('/api/admin/codes', { headers: { 'x-admin-wachtwoord': ww } });
+    if (resp.status === 403) {
+      document.getElementById('admin-fout').style.display = 'block';
+      return;
+    }
+
+    adminWW = ww;
+    sessionStorage.setItem('pandai_admin_ww', ww);
+    document.getElementById('login-scherm').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    laadData();
+  }
+
+  function uitloggen() {
+    sessionStorage.removeItem('pandai_admin_ww');
+    adminWW = '';
+    document.getElementById('login-scherm').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('ww-input').value = '';
+  }
+
+  async function laadData() {
+    const [codesResp, logsResp] = await Promise.all([
+      fetch('/api/admin/codes', { headers: { 'x-admin-wachtwoord': adminWW } }),
+      fetch('/api/admin/logs', { headers: { 'x-admin-wachtwoord': adminWW } })
+    ]);
+    const codes = await codesResp.json();
+    const logs = await logsResp.json();
+
+    // Stats
+    const vandaag = new Date().toLocaleDateString('nl-NL');
+    document.getElementById('stat-codes').textContent = codes.filter(c => c.actief).length;
+    document.getElementById('stat-inlogs').textContent = logs.filter(l => l.actie === 'ingelogd').length;
+    document.getElementById('stat-generaties').textContent = logs.filter(l => l.actie === 'tekst_gegenereerd').length;
+    document.getElementById('stat-vandaag').textContent = logs.filter(l => new Date(l.tijdstip).toLocaleDateString('nl-NL') === vandaag).length;
+
+    // Codes tabel
+    const tabel = document.getElementById('codes-tabel');
+    tabel.innerHTML = codes.map(c => {
+      const datum = c.laatste_gebruik ? new Date(c.laatste_gebruik).toLocaleString('nl-NL') : 'Nooit';
+      return '<tr>' +
+        '<td><span class="code-badge">' + c.code + '</span></td>' +
+        '<td>' + c.naam + '</td>' +
+        '<td><span class="' + (c.actief ? 'status-actief' : 'status-inactief') + '">' + (c.actief ? 'Actief' : 'Inactief') + '</span></td>' +
+        '<td>' + (c.gebruik || 0) + 'x</td>' +
+        '<td style="color:#555;font-size:12px">' + datum + '</td>' +
+        '<td><div style="display:flex;gap:6px">' +
+          '<button class="tabel-btn" onclick="toggleCode(\'' + c.code + '\')">' + (c.actief ? 'Deactiveer' : 'Activeer') + '</button>' +
+          '<button class="tabel-btn rood" onclick="verwijderCode(\'' + c.code + '\')">Verwijder</button>' +
+        '</div></td>' +
+        '</tr>';
+    }).join('');
+
+    // Logs
+    const logLijst = document.getElementById('logs-lijst');
+    if (logs.length === 0) {
+      logLijst.innerHTML = '<div style="color:#444;font-size:13px;text-align:center;padding:20px">Nog geen activiteit geregistreerd.</div>';
+      return;
+    }
+    logLijst.innerHTML = logs.map(log => {
+      const isGen = log.actie === 'tekst_gegenereerd';
+      const tijdstip = new Date(log.tijdstip).toLocaleString('nl-NL');
+      return '<div class="log-rij">' +
+        '<span class="log-actie ' + (isGen ? 'gegenereerd' : 'ingelogd') + '">' + (isGen ? '✍️ Tekst' : '🔑 Ingelogd') + '</span>' +
+        '<span class="log-naam">' + log.naam + '</span>' +
+        '<span class="log-code">' + log.code + '</span>' +
+        '<span class="log-ip">' + log.ip + '</span>' +
+        '<span class="log-tijd">' + tijdstip + '</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  async function maakCode() {
+    const naam = document.getElementById('nieuwe-naam').value.trim();
+    const code = document.getElementById('nieuwe-code').value.trim().toUpperCase();
+    if (!naam || !code) return alert('Vul naam en code in');
+
+    const resp = await fetch('/api/admin/codes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-wachtwoord': adminWW },
+      body: JSON.stringify({ naam, code })
+    });
+    const json = await resp.json();
+    if (json.fout) return alert(json.fout);
+
+    document.getElementById('nieuwe-naam').value = '';
+    document.getElementById('nieuwe-code').value = '';
+    laadData();
+  }
+
+  async function toggleCode(code) {
+    await fetch('/api/admin/codes/' + code, { method: 'PATCH', headers: { 'x-admin-wachtwoord': adminWW } });
+    laadData();
+  }
+
+  async function verwijderCode(code) {
+    if (!confirm('Weet je zeker dat je code ' + code + ' wil verwijderen?')) return;
+    await fetch('/api/admin/codes/' + code, { method: 'DELETE', headers: { 'x-admin-wachtwoord': adminWW } });
+    laadData();
+  }
+
+  // Auto-inloggen als wachtwoord al bekend is
+  const opgeslagenWW = sessionStorage.getItem('pandai_admin_ww');
+  if (opgeslagenWW) {
+    document.getElementById('ww-input').value = opgeslagenWW;
+    adminInloggen();
+  }
+</script>
+</body>
+</html>
