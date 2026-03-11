@@ -138,6 +138,28 @@
   .stijl-actief { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4CAF50; margin-top: 8px; }
   .stijl-actief-dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF50; }
 
+  .bibliotheek-sectie { background: var(--bg3); border: 1px solid #2a2a2a; border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+  .bibliotheek-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; cursor: pointer; }
+  .bibliotheek-titel { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .bibliotheek-count { font-size: 10px; background: var(--bg4); border: 1px solid #333; color: var(--grijs2); padding: 2px 8px; border-radius: 100px; }
+  .bibliotheek-leeg { font-size: 12px; color: #444; text-align: center; padding: 20px 0; }
+  .bibl-item { background: var(--bg2); border: 1px solid #222; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; position: relative; transition: border-color 0.2s; }
+  .bibl-item:hover { border-color: #333; }
+  .bibl-item.favoriet { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.03); }
+  .bibl-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .bibl-item-titel { font-size: 12px; font-weight: 600; color: var(--wit); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px; }
+  .bibl-acties { display: flex; gap: 4px; flex-shrink: 0; }
+  .bibl-btn { background: none; border: 1px solid #2a2a2a; border-radius: 6px; padding: 3px 8px; font-size: 11px; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; color: var(--grijs2); }
+  .bibl-btn:hover { border-color: var(--o); color: var(--o); }
+  .bibl-btn.fav-btn { font-size: 13px; padding: 3px 6px; }
+  .bibl-btn.fav-btn.actief { border-color: rgba(255,215,0,0.5); color: gold; background: rgba(255,215,0,0.08); }
+  .bibl-btn.gebruik-btn.actief { border-color: #4CAF50; color: #4CAF50; background: rgba(76,175,80,0.08); }
+  .bibl-preview { font-size: 11px; color: #555; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .bibl-meta { font-size: 10px; color: #444; margin-top: 6px; }
+  .opslaan-btn { font-size: 11px; color: var(--grijs2); background: none; border: 1px solid #2a2a2a; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 4px 10px; border-radius: 4px; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+  .opslaan-btn:hover { border-color: #4CAF50; color: #4CAF50; }
+  .opslaan-btn.opgeslagen { border-color: #4CAF50; color: #4CAF50; background: rgba(76,175,80,0.08); }
+
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
     .paneel-links { border-right: none; border-bottom: 1px solid #1a1a1a; }
@@ -173,6 +195,18 @@
       <div class="stijl-actief" id="stijl-actief" style="display:none">
         <div class="stijl-actief-dot"></div>
         <span id="stijl-actief-tekst">Schrijfstijl actief — PandAI schrijft zoals jij</span>
+      </div>
+    </div>
+
+    <!-- BIBLIOTHEEK -->
+    <div class="bibliotheek-sectie">
+      <div class="bibliotheek-header" onclick="toggleBibliotheek()">
+        <div class="bibliotheek-titel">📚 Mijn tekstbibliotheek <span class="bibliotheek-count" id="bibl-count">0</span></div>
+        <span style="color:var(--grijs);font-size:12px" id="bibl-pijl">▾</span>
+      </div>
+      <div id="bibliotheek-inhoud">
+        <div class="bibliotheek-leeg" id="bibl-leeg">Nog geen teksten opgeslagen. Genereer een tekst en klik op "Opslaan" om hem hier te bewaren.</div>
+        <div id="bibl-lijst"></div>
       </div>
     </div>
 
@@ -537,7 +571,12 @@
         <div class="tekst-inhoud" id="kort-inhoud"></div>
       </div>
       <div class="tekst-blok">
-        <div class="tekst-blok-header"><span class="tekst-blok-label">📄 Volledige verkooptekst</span><button class="kopieer-btn" onclick="kopieer('volledig-inhoud', this)">📋 Kopiëren</button></div>
+        <div class="tekst-blok-header"><span class="tekst-blok-label">📄 Volledige verkooptekst</span>
+          <div style="display:flex;gap:6px">
+            <button class="opslaan-btn" id="opslaan-btn" onclick="slaVolledigOp(this)">💾 Opslaan</button>
+            <button class="kopieer-btn" onclick="kopieer('volledig-inhoud', this)">📋 Kopiëren</button>
+          </div>
+        </div>
         <div class="tekst-inhoud" id="volledig-inhoud"></div>
       </div>
       <div class="tekst-blok">
@@ -597,6 +636,144 @@
       .map(el => el.value.trim())
       .filter(t => t.length > 50);
   }
+
+  // BIBLIOTHEEK
+  let bibliotheekOpen = true;
+
+  function toggleBibliotheek() {
+    bibliotheekOpen = !bibliotheekOpen;
+    document.getElementById('bibliotheek-inhoud').style.display = bibliotheekOpen ? 'block' : 'none';
+    document.getElementById('bibl-pijl').textContent = bibliotheekOpen ? '▴' : '▾';
+  }
+
+  function getBibliotheek() {
+    try { return JSON.parse(localStorage.getItem('pandai_bibliotheek') || '[]'); } catch { return []; }
+  }
+
+  function saveBibliotheek(items) {
+    localStorage.setItem('pandai_bibliotheek', JSON.stringify(items));
+  }
+
+  function slaVolledigOp(btn) {
+    const tekst = document.getElementById('volledig-inhoud').textContent.trim();
+    const titel = document.getElementById('titel-inhoud').textContent.trim();
+    if (!tekst) return;
+
+    const items = getBibliotheek();
+    const item = {
+      id: Date.now(),
+      titel: titel || 'Verkooptekst ' + new Date().toLocaleDateString('nl-NL'),
+      tekst: tekst,
+      datum: new Date().toLocaleDateString('nl-NL'),
+      favoriet: false
+    };
+    items.unshift(item);
+    if (items.length > 20) items.pop();
+    saveBibliotheek(items);
+
+    btn.textContent = '✓ Opgeslagen';
+    btn.classList.add('opgeslagen');
+    setTimeout(() => { btn.textContent = '💾 Opslaan'; btn.classList.remove('opgeslagen'); }, 2000);
+
+    renderBibliotheek();
+    laadFavorieten();
+  }
+
+  function toggleFavoriet(id) {
+    const items = getBibliotheek();
+    const item = items.find(i => i.id === id);
+    if (item) {
+      item.favoriet = !item.favoriet;
+      saveBibliotheek(items);
+      renderBibliotheek();
+      laadFavorieten();
+    }
+  }
+
+  function verwijderUitBibliotheek(id) {
+    const items = getBibliotheek().filter(i => i.id !== id);
+    saveBibliotheek(items);
+    renderBibliotheek();
+    laadFavorieten();
+  }
+
+  function gebruikAlsStijl(id) {
+    const item = getBibliotheek().find(i => i.id === id);
+    if (!item) return;
+
+    // Voeg toe aan stijl tekstgebied
+    const container = document.getElementById('stijl-teksten');
+    const leegVeld = Array.from(container.querySelectorAll('textarea')).find(t => !t.value.trim());
+
+    if (leegVeld) {
+      leegVeld.value = item.tekst;
+      leegVeld.classList.add('heeft-tekst');
+    } else {
+      const nieuw = document.createElement('div');
+      nieuw.className = 'stijl-tekst-item';
+      nieuw.innerHTML = '<textarea rows="4" oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)">✕</button>';
+      container.appendChild(nieuw);
+      nieuw.querySelector('textarea').value = item.tekst;
+      nieuw.querySelector('textarea').classList.add('heeft-tekst');
+    }
+    updateStijlStatus();
+
+    // Scroll naar stijl sectie
+    document.querySelector('.stijl-sectie').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function laadFavorieten() {
+    const favorieten = getBibliotheek().filter(i => i.favoriet);
+    const container = document.getElementById('stijl-teksten');
+
+    // Verwijder bestaande favoriet-items
+    container.querySelectorAll('.favoriet-auto').forEach(el => el.remove());
+
+    if (favorieten.length > 0) {
+      favorieten.slice(0, 3).forEach(fav => {
+        const bestaatAl = Array.from(container.querySelectorAll('textarea')).some(t => t.value.trim() === fav.tekst.trim());
+        if (!bestaatAl) {
+          const nieuw = document.createElement('div');
+          nieuw.className = 'stijl-tekst-item favoriet-auto';
+          nieuw.innerHTML = '<div style="font-size:10px;color:gold;margin-bottom:4px">⭐ ' + fav.titel + '</div><textarea rows="3" oninput="stijlTekstGewijzigd(this)"></textarea><button class="stijl-verwijder" onclick="verwijderStijlTekst(this)">✕</button>';
+          container.appendChild(nieuw);
+          nieuw.querySelector('textarea').value = fav.tekst;
+          nieuw.querySelector('textarea').classList.add('heeft-tekst');
+        }
+      });
+      updateStijlStatus();
+    }
+  }
+
+  function renderBibliotheek() {
+    const items = getBibliotheek();
+    const lijst = document.getElementById('bibl-lijst');
+    const leeg = document.getElementById('bibl-leeg');
+    const count = document.getElementById('bibl-count');
+
+    count.textContent = items.length;
+    leeg.style.display = items.length === 0 ? 'block' : 'none';
+
+    lijst.innerHTML = items.map(item => {
+      const preview = item.tekst.substring(0, 120) + '...';
+      return '<div class="bibl-item ' + (item.favoriet ? 'favoriet' : '') + '" id="bibl-' + item.id + '">' +
+        '<div class="bibl-item-header">' +
+          '<div class="bibl-item-titel">' + (item.favoriet ? '⭐ ' : '') + item.titel + '</div>' +
+          '<div class="bibl-acties">' +
+            '<button class="bibl-btn fav-btn ' + (item.favoriet ? 'actief' : '') + '" onclick="toggleFavoriet(' + item.id + ')" title="' + (item.favoriet ? 'Verwijder favoriet' : 'Markeer als favoriet') + '">⭐</button>' +
+            '<button class="bibl-btn gebruik-btn" onclick="gebruikAlsStijl(' + item.id + ')">Als stijl</button>' +
+            '<button class="bibl-btn" onclick="verwijderUitBibliotheek(' + item.id + ')" style="color:#555">✕</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="bibl-preview">' + preview + '</div>' +
+        '<div class="bibl-meta">' + item.datum + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  // Init
+  renderBibliotheek();
+  laadFavorieten();
 
   function dragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
   function dragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
