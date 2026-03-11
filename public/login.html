@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PandAI — Inloggen</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0E0E0E; color:#F5F5F0; font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .container { width:100%; max-width:420px; padding:24px; }
+  .logo { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; text-align:center; margin-bottom:8px; }
+  .logo span { color:#F26A1B; }
+  .subtitel { text-align:center; color:#666; font-size:14px; margin-bottom:40px; }
+  .card { background:#161616; border:1px solid #1f1f1f; border-radius:16px; padding:32px; }
+  .card-titel { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:6px; }
+  .card-sub { font-size:13px; color:#666; margin-bottom:24px; line-height:1.5; }
+  label { display:block; font-size:12px; color:#999; margin-bottom:6px; font-weight:500; }
+  input { width:100%; background:#1E1E1E; border:1px solid #2a2a2a; border-radius:8px; padding:14px 16px; font-size:15px; font-family:'DM Sans',sans-serif; color:#F5F5F0; outline:none; transition:border-color 0.2s; letter-spacing:2px; text-transform:uppercase; }
+  input:focus { border-color:#F26A1B; }
+  input::placeholder { letter-spacing:0; text-transform:none; color:#444; }
+  button { width:100%; background:linear-gradient(135deg,#F26A1B,#FF8C42); color:white; border:none; border-radius:10px; padding:16px; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; margin-top:16px; transition:all 0.2s; }
+  button:hover { transform:scale(1.02); opacity:0.95; }
+  button:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .fout { background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3); border-radius:8px; padding:12px 14px; color:#ff8888; font-size:13px; margin-top:14px; display:none; }
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">Pand<span>AI</span></div>
+  <div class="subtitel">AI-gestuurde verkoopteksten voor makelaars</div>
+  <div class="card">
+    <div class="card-titel">Toegang tot PandAI</div>
+    <div class="card-sub">Voer je persoonlijke toegangscode in om de tool te starten.</div>
+    <label>Toegangscode</label>
+    <input type="text" id="code-input" placeholder="bijv. MAKELAAR2024" onkeydown="if(event.key==='Enter')inloggen()" autofocus />
+    <button id="login-btn" onclick="inloggen()">Inloggen →</button>
+    <div class="fout" id="fout-melding"></div>
+  </div>
+</div>
+<script>
+  async function inloggen() {
+    const code = document.getElementById('code-input').value.trim();
+    if (!code) return;
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Controleren...';
+
+    try {
+      const resp = await fetch('/api/inloggen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const json = await resp.json();
+      if (json.succes) {
+        sessionStorage.setItem('pandai_code', code.toUpperCase());
+        sessionStorage.setItem('pandai_naam', json.naam);
+        window.location.href = '/tool';
+      } else {
+        const fout = document.getElementById('fout-melding');
+        fout.style.display = 'block';
+        fout.textContent = json.fout || 'Ongeldige code. Neem contact op met PandAI.';
+        btn.disabled = false;
+        btn.textContent = 'Inloggen →';
+      }
+    } catch (e) {
+      document.getElementById('fout-melding').style.display = 'block';
+      document.getElementById('fout-melding').textContent = 'Verbindingsfout. Probeer opnieuw.';
+      btn.disabled = false;
+      btn.textContent = 'Inloggen →';
+    }
+  }
+</script>
+</body>
+</html>
