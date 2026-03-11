@@ -1,4 +1,3 @@
-
 const express = require('express');
 const path = require('path');
 const Anthropic = require('@anthropic-ai/sdk');
@@ -18,7 +17,6 @@ app.post('/api/genereer', async (req, res) => {
 
     if (fileBase64 && fileMediaType) {
       const isPDF = fileMediaType === 'application/pdf';
-      const isAfbeelding = fileMediaType.startsWith('image/');
       messages = [{
         role: 'user',
         content: [
@@ -41,7 +39,7 @@ app.post('/api/genereer', async (req, res) => {
     });
 
     const raw = response.content.map(i => i.text || '').join('');
-const resultaat = raw.replace(/\*\*/g, '').replace(/\*/g, '');
+    const resultaat = raw.replace(/\*\*/g, '').replace(/\*/g, '');
     res.json({ resultaat });
 
   } catch (err) {
@@ -50,50 +48,7 @@ const resultaat = raw.replace(/\*\*/g, '').replace(/\*/g, '');
   }
 });
 
-function bouwPrompt(toon, documentTekst) {
-  return `Je bent een expert vastgoedcopywriter in Nederland. Analyseer het bijgevoegde inventarisatiedocument en extraheer alle pandgegevens.
-${documentTekst ? '\nDOCUMENT INHOUD:\n' + documentTekst + '\n' : ''}
-Schrijfstijl: ${toon}
-
-Genereer een professionele Funda verkooptekst met EXACT deze structuur:
-
-TITEL:
-[Pakkende titel van 7-12 woorden die het unieke kenmerk benadrukt]
-
-KORT:
-[Precies 56 woorden - dit is de Funda intro die direct zichtbaar is. Begin met het sterkste kenmerk, eindig met een nieuwsgierigheidsprikkel]
-
-VOLLEDIG:
-[350-500 woorden totaal. Opbouw:
-- Alinea 1 (60-80 woorden): Sfeer en gevoel, waarom is deze woning bijzonder?
-- Alinea 2 (60-80 woorden): Begane grond rondleiding
-- Alinea 3 (60-80 woorden): Verdieping(en) en slaapkamers
-- Alinea 4 (40-60 woorden): Tuin, garage, buitenruimte
-- Alinea 5 (40-60 woorden): Locatie en omgeving
-- Bullet lijst: 5-7 belangrijkste kenmerken (oneven aantal werkt beter)
-- Afsluitende zin met uitnodiging tot bezichtiging]
-
-SOCIAL:
-[Max 80 woorden, eigen creatieve invalshoek, 4-5 relevante hashtags]
-
-Schrijfstijl: ${toon}
-
-Belangrijke regels:
-- Varieer de opbouw en zinsstructuur elke keer anders
-- Begin NOOIT met "Deze woning" of "Dit pand"
-- Vermijd clichés zoals "sfeervolle woning", "kindvriendelijke wijk", "instapklaar"
-- Schrijf vanuit het perspectief van de koper (jij/je), niet de verkoper
-- Gebruik concrete details en feiten, geen vage superlatieven
-- Schrijf in correct Nederlands
-
-function bouwHandmatigPrompt(data, toon) {
-  return `Je bent een expert vastgoedcopywriter in Nederland.
-
-PANDGEGEVENS:
-${Object.entries(data).map(([k, v]) => `- ${k}: ${v}`).join('\n')}
-
-Schrijfstijl: ${toon}
-
+const PROMPT_STRUCTUUR = `
 Genereer een professionele Funda verkooptekst met EXACT deze structuur:
 
 TITEL:
@@ -103,10 +58,26 @@ KORT:
 [Precies 56 woorden - Funda intro die direct zichtbaar is. Begin met het sterkste kenmerk, eindig met een nieuwsgierigheidsprikkel]
 
 VOLLEDIG:
-[350-500 woorden. Alinea 1: sfeer en gevoel. Alinea 2: begane grond. Alinea 3: verdiepingen en slaapkamers. Alinea 4: tuin en buitenruimte. Alinea 5: locatie en omgeving. Sluit af met 5-7 bullet punten van de belangrijkste kenmerken en een uitnodiging tot bezichtiging]
+[350-500 woorden totaal. Opbouw: Alinea 1 sfeer en gevoel waarom is deze woning bijzonder. Alinea 2 begane grond rondleiding. Alinea 3 verdiepingen en slaapkamers. Alinea 4 tuin en buitenruimte. Alinea 5 locatie en omgeving. Sluit af met 5-7 bullet punten van de belangrijkste kenmerken en een uitnodiging tot bezichtiging]
 
 SOCIAL:
 [Max 80 woorden, creatieve invalshoek, 4-5 relevante hashtags]
 
-Regels: varieer de opbouw elke keer. Begin nooit met "Deze woning" of "Dit pand". Vermijd cliches. Schrijf vanuit perspectief van de koper. Gebruik concrete feiten. Schrijf in correct Nederlands.`;
+Regels: varieer de opbouw elke keer anders. Begin nooit met Deze woning of Dit pand. Vermijd cliches zoals sfeervolle woning, kindvriendelijke wijk of instapklaar. Schrijf vanuit perspectief van de koper. Gebruik concrete feiten. Schrijf in correct Nederlands.`;
+
+function bouwPrompt(toon, documentTekst) {
+  return 'Je bent een expert vastgoedcopywriter in Nederland. Analyseer het bijgevoegde inventarisatiedocument en extraheer alle pandgegevens.\n' +
+    (documentTekst ? '\nDOCUMENT INHOUD:\n' + documentTekst + '\n' : '') +
+    '\nSchrijfstijl: ' + toon +
+    PROMPT_STRUCTUUR;
 }
+
+function bouwHandmatigPrompt(data, toon) {
+  const pandInfo = Object.entries(data).map(([k, v]) => '- ' + k + ': ' + v).join('\n');
+  return 'Je bent een expert vastgoedcopywriter in Nederland.\n\nPANDGEGEVENS:\n' +
+    pandInfo +
+    '\n\nSchrijfstijl: ' + toon +
+    PROMPT_STRUCTUUR;
+}
+
+app.listen(PORT, () => console.log('PandAI draait op poort ' + PORT));
